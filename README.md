@@ -5,7 +5,7 @@ This repository holds the code and data used for the statistical analysis and mo
 
 The entirety of our analysis was done in R. Necessary packages for replicating our analysis are outlined at the top of each R script file found here.
 
-Fisheries data was obtained from the [Sea Around Us database](https://www.seaaroundus.org/)] produced by Pauly et al. 2020. We obtained catch data from each EEZ and High Seas region. We only considered catch data from industrial fisheries for this analysis. All artisanal, subsistence, and recreational fisheries were not considered. Bycatch was also not considered in our analysis.
+Fisheries data was obtained from the [Sea Around Us database](https://www.seaaroundus.org/) produced by Pauly et al. 2020. We obtained catch data by EEZ and High Seas region. We only considered catch data from industrial fisheries for this analysis. All artisanal, subsistence, and recreational fisheries were not considered. Bycatch was also not considered in our analysis.
 
 If you would like to replicate our analysis, download this repository and install R, then run the code in the following order:
 ```
