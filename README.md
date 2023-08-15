@@ -1,5 +1,5 @@
 # Fishing_Out_Nutrients
-Code and data for Fishing out nutrients: The spatiotemporal and ecological dynamics of fishery-based nutrient extraction by González Ortiz et al. 2023
+Data and code for *Fishing out nutrients: The spatiotemporal and ecological dynamics of fishery-based nutrient extraction* by González Ortiz et al. 2023
 
 This repository holds the code and data used for the statistical analysis and most figures presented in the manuscript (in progress) *Fishing out nutrients: The spatiotemporal and ecological dynamics of fishery-based nutrient extraction*.
 
