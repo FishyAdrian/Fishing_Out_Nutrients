@@ -1,7 +1,7 @@
 # Fishing_Out_Nutrients
 Data and code for *Fishing out nutrients: The spatiotemporal and ecological patterns of fishery-based nutrient extraction* by González Ortiz et al. 2024
 
-This repository holds the code and data used for the statistical analysis and most figures presented in the manuscript (in review) *Fishing out nutrients: The spatiotemporal and ecological dynamics of fishery-based nutrient extraction*.
+This repository holds the code and data used for the statistical analysis and most figures presented in the manuscript (in review) *Fishing out nutrients: The spatiotemporal and ecological patterns of fishery-based nutrient extraction*.
 
 The entirety of our analysis was done in R. Necessary packages for replicating our analysis are outlined at the top of each R script file found here.
 
