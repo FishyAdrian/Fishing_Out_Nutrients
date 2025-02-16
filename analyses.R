@@ -22,22 +22,26 @@ library(mvtnorm)
 
 ratio_model <- function(data, ratio = NULL, nutrient = NULL) {
   
-  ctrl <- lmeControl(opt = "optim", maxIter = 2000, msMaxIter = 2000, msMaxEval = 2000) # Specify model control values
+  ctrl <- lmeControl(opt = "optim", maxIter = 2000, msMaxIter = 2000, msMaxEval = 2000) # Model control values
   
-  # Construct the formula. Nutrient ratios were log-transormed to normalize values.
+  # Construct the formula. Nutrient ratios were log-transformed to normalize values.
   formula <- as.formula(paste("log(", ratio, ") ~", nutrient, "* V.I."))
   random_formula <- as.formula(paste("~ 1 +", nutrient, "| family/genus"))
   
   # Fit the model
-  model <- lme(eval(substitute(formula)), 
-               random = eval(substitute(random_formula)),
+  model <- lme(formula, 
+               random = random_formula,
                method = "REML", 
                data = data, 
                na.action = na.exclude, 
                control = ctrl)
   
+  print(model)
+  
   return(model)
 }
+
+
 
 # The function can be used to generate a model predicting nutrient ratios from a specified nutrient.
 ratio_lme <- ratio_model(data, ratio = NULL, nutrient = NULL)
