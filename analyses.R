@@ -16,9 +16,6 @@ library (MuMIn)
 library(ggpubr)
 library(mvtnorm)
 
-# testing new edits to github
-
-
 #### PREDICTIVE MODELS FOR NUTRIENT COMPOSITION ####
 
 # The following function is used to generate the linear mixed-effects model we used for our nutrient ratios. We generated a model for each nutrient ratio (C:N, C:P, N:P). Ratio and nutrient must be indicated in quotes. E.g., ratio = "C_N"; nutrient = "N".
