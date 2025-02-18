@@ -59,6 +59,9 @@ ratio_model <- function(data, ratio = NULL, nutrient = NULL) {
 # Sets model control values.
 ctrl <- lmeControl(opt = "optim", maxIter = 2000, msMaxIter = 2000, msMaxEval = 2000)
 
+# Models all followed the following naming conventions:
+
+
 ##### N:P from P Content #####
 
 ###### N:P from Wet P ######
@@ -750,45 +753,45 @@ pred_Ratios_NutrientContent$derived_WetC_SD <- NA
 pred_Ratios_NutrientContent$derived_DryC <- NA
 pred_Ratios_NutrientContent$derived_DryC_SD <- NA
 
+# For loop to generate predicted C composition values based on predicted nutrient ratio values.
 for (X in 1:nrow(pred_Ratios_NutrientContent)) {
+  # This `ifelse` bracket tells the for loop to preferentially use the predicted C:P ratio values from D_ME_CP_P and then use the predicted C:N values from D_ME_CN_N.
   if (!is.na(pred_Ratios_NutrientContent$pred_log_CP_fromDryP[X])){
     
+    # The following generates a random distribution of 10,000 C:P predicted values. This code takes the predicted values out of log-space and then transforms them to a molar basis.
     pred_NR = (exp(rnorm(10000, mean = pred_Ratios_NutrientContent$pred_log_CP_fromDryP[X], 
                          sd = pred_Ratios_NutrientContent$pred_log_CP_fromDryP_SD[X])) * (12/31))
     
-    # Wet Weight C
+    # Generates a distribution of predicted wet-weight C values based on observed values wet-weight P and predicted C:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$WetWeight_Pwhole[X] * pred_NR)
     
     pred_Ratios_NutrientContent$derived_WetC[X] = mean(pred_temp)
     pred_Ratios_NutrientContent$derived_WetC_SD[X] = sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_WetC_SD_logit[X] = sd(qlogis(pred_temp/100))
     
-    # Dry Weight C
+    # Generates a distribution of predicted dry-weight C values based on observed values of dry-weight P and predicted C:P ratio from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$DryWeight_Pwhole[X] * pred_NR)
     
     pred_Ratios_NutrientContent$derived_DryC[X] = mean(pred_temp)
     pred_Ratios_NutrientContent$derived_DryC_SD[X] = sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_DryC_SD_logit[X] = sd(qlogis(pred_temp/100))
     
   } 
   else { if (!is.na(pred_Ratios_NutrientContent$pred_log_CN_fromDryN[X])) {
     
+    # Distribution of 10,000 predicted C:N values.
     pred_NR = (exp(rnorm(10000, mean = pred_Ratios_NutrientContent$pred_log_CN_fromDryN[X], 
                          sd = pred_Ratios_NutrientContent$pred_log_CN_fromDryN_SD[X])) * (12/14))
     
-    # Wet Weight C
+    # Generates a distribution of predicted wet-weight C values based on observed values wet-weight N and predicted C:N ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$WetWeight_N[X] * pred_NR)
     
     pred_Ratios_NutrientContent$derived_WetC[X] = mean(pred_temp)
     pred_Ratios_NutrientContent$derived_WetC_SD[X] = sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_WetC_SD_logit[X] = sd(qlogis(pred_temp/100))
     
-    # Dry Weight C
+    # Generates a distribution of predicted wet-weight C values based on observed values dry-weight N and predicted C:N ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$DryWeight_N[X] * pred_NR)
     
     pred_Ratios_NutrientContent$derived_DryC[X] = mean(pred_temp)
     pred_Ratios_NutrientContent$derived_DryC_SD[X] = sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_DryC_SD_logit[X] = sd(qlogis(pred_temp/100))
   }
     else {NA}
   }} 
