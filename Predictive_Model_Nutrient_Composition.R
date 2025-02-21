@@ -1,7 +1,7 @@
 ###############################################################################
 #                                                                             #
 #                           Fishing Out Nutrients                             #
-#                             Data Analyses Code                              #
+#                 Predictive Models for Nutrient Compositions                 #
 #                                                                             #
 ###############################################################################
 
@@ -755,20 +755,20 @@ pred_Ratios_NutrientContent$derived_DryC_SD <- NA
 
 # For loop to generate predicted C composition values based on predicted nutrient ratio values.
 for (X in 1:nrow(pred_Ratios_NutrientContent)) {
-  # This `ifelse` bracket tells the for loop to preferentially use the predicted C:P ratio values from D_ME_CP_P and then use the predicted C:N values from D_ME_CN_N.
+  # This `ifelse` bracket tells the for loop to preferentially use the predicted C:P ratio values from the D_ME_CP_P model and then use the predicted C:N values from D_ME_CN_N model.
   if (!is.na(pred_Ratios_NutrientContent$pred_log_CP_fromDryP[X])){
     
-    # The following generates a random distribution of 10,000 C:P predicted values. This code takes the predicted values out of log-space and then transforms them to a molar basis.
+    # The following generates a random distribution of 10,000 predicted C:P values. This code takes the predicted values out of log-space and then transforms them to a molar basis.
     pred_NR = (exp(rnorm(10000, mean = pred_Ratios_NutrientContent$pred_log_CP_fromDryP[X], 
                          sd = pred_Ratios_NutrientContent$pred_log_CP_fromDryP_SD[X])) * (12/31))
     
-    # Generates a distribution of predicted wet-weight C values based on observed values wet-weight P and predicted C:P ratios from the corresponding model.
+    # Generates a distribution of predicted wet-weight C values based on observed wet-weight P values and predicted C:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$WetWeight_Pwhole[X] * pred_NR)
     
     pred_Ratios_NutrientContent$derived_WetC[X] = mean(pred_temp)
     pred_Ratios_NutrientContent$derived_WetC_SD[X] = sd(pred_temp)
     
-    # Generates a distribution of predicted dry-weight C values based on observed values of dry-weight P and predicted C:P ratio from the corresponding model.
+    # Generates a distribution of predicted dry-weight C values based on observed dry-weight P values and predicted C:P ratio from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$DryWeight_Pwhole[X] * pred_NR)
     
     pred_Ratios_NutrientContent$derived_DryC[X] = mean(pred_temp)
@@ -777,22 +777,23 @@ for (X in 1:nrow(pred_Ratios_NutrientContent)) {
   } 
   else { if (!is.na(pred_Ratios_NutrientContent$pred_log_CN_fromDryN[X])) {
     
-    # Distribution of 10,000 predicted C:N values.
+    # The following generates a random distribution of 10,000 predicted C:N values.
     pred_NR = (exp(rnorm(10000, mean = pred_Ratios_NutrientContent$pred_log_CN_fromDryN[X], 
                          sd = pred_Ratios_NutrientContent$pred_log_CN_fromDryN_SD[X])) * (12/14))
     
-    # Generates a distribution of predicted wet-weight C values based on observed values wet-weight N and predicted C:N ratios from the corresponding model.
+    # Generates a distribution of predicted wet-weight C values based on observed wet-weight N values and predicted C:N ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$WetWeight_N[X] * pred_NR)
     
     pred_Ratios_NutrientContent$derived_WetC[X] = mean(pred_temp)
     pred_Ratios_NutrientContent$derived_WetC_SD[X] = sd(pred_temp)
     
-    # Generates a distribution of predicted wet-weight C values based on observed values dry-weight N and predicted C:N ratios from the corresponding model.
+    # Generates a distribution of predicted wet-weight C values based on observed dry-weight N values and predicted C:N ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$DryWeight_N[X] * pred_NR)
     
     pred_Ratios_NutrientContent$derived_DryC[X] = mean(pred_temp)
     pred_Ratios_NutrientContent$derived_DryC_SD[X] = sd(pred_temp)
   }
+    # If there was no predicted nutrient ratio value to use, then the output here would simply be NA.
     else {NA}
   }} 
 
@@ -804,15 +805,14 @@ for (X in 1:nrow(pred_Ratios_NutrientContent)) {
 
 ##### Deriving N from Predicted Nutrient Ratios #####
 
-# The for() loop below uses the refined predictions with the known standard deviations to derive the missing nutrient content data.
+# Generated the columns to be populated with estimates of both dry- and wet-based C composition values.
 
 pred_Ratios_NutrientContent$derived_WetN <- NA
 pred_Ratios_NutrientContent$derived_WetN_SD <- NA
-pred_Ratios_NutrientContent$derived_WetN_SD_logit <- NA
 pred_Ratios_NutrientContent$derived_DryN <- NA
 pred_Ratios_NutrientContent$derived_DryN_SD <- NA
-pred_Ratios_NutrientContent$derived_DryN_SD_logit <- NA
 
+# For loop to generate predicted N composition values based on predicted nutrient ratio values.
 for (X in 1:nrow(pred_Ratios_NutrientContent)) {
   if (!is.na(pred_Ratios_NutrientContent$pred_log_NP_fromWetP[X])){
     
