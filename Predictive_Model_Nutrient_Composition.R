@@ -792,14 +792,14 @@ for (X in 1:nrow(pred_Ratios_NutrientContent)) {
     # Generates a distribution of predicted wet-weight C values based on observed wet-weight N values and predicted C:N ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$WetWeight_N[X] * pred_NR)
     
-    # Obtains mean estimated wet-weight C value with associated standard deviation.
+    # Obtains mean estimated wet-weight C value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_WetC[X] = mean(pred_temp)
     pred_Ratios_NutrientContent$derived_WetC_SD[X] = sd(pred_temp)
     
     # Generates a distribution of predicted wet-weight C values based on observed dry-weight N values and predicted C:N ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$DryWeight_N[X] * pred_NR)
     
-    # Obtains mean estimated C dry-weight value with associated standard deviation.
+    # Obtains mean estimated C dry-weight value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_DryC[X] = mean(pred_temp)
     pred_Ratios_NutrientContent$derived_DryC_SD[X] = sd(pred_temp)
   }
@@ -815,8 +815,7 @@ for (X in 1:nrow(pred_Ratios_NutrientContent)) {
 
 ##### Deriving N from Predicted Nutrient Ratios #####
 
-# Generated the columns to be populated with estimates of both dry- and wet-based C composition values.
-
+# Generated the columns to be populated with estimates of both dry- and wet-based N composition values.
 pred_Ratios_NutrientContent$derived_WetN <- NA
 pred_Ratios_NutrientContent$derived_WetN_SD <- NA
 pred_Ratios_NutrientContent$derived_DryN <- NA
@@ -834,56 +833,57 @@ for (X in 1:nrow(pred_Ratios_NutrientContent)) {
     # Generates a distribution of predicted wet-weight N values based on observed wet-weight P values and predicted N:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$WetWeight_Pwhole[X] * pred_NR)
     
-    # Obtains mean estimated wet-weight N value with associated standard deviation.
+    # Obtains mean estimated wet-weight N value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_WetN[X] <- mean(pred_temp)
     pred_Ratios_NutrientContent$derived_WetN_SD[X] <- sd(pred_temp)
     
     # Generates a distribution of predicted wet-weight N values based on observed dry-weight P values and predicted N:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$DryWeight_Pwhole[X] * pred_NR)
     
-    # Obtains mean estimated dry-weight N value with associated standard deviation.
+    # Obtains mean estimated dry-weight N value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_DryN[X] <- mean(pred_temp)
     pred_Ratios_NutrientContent$derived_DryN_SD[X] <- sd(pred_temp)
     
   } 
   else { if (!is.na(pred_Ratios_NutrientContent$pred_log_NP_fromDryP[X])) {
-    
+    # The following generates a random distribution of 10,000 predicted N:P values. This code takes the predicted values out of log-space and then transforms them to a molar basis.
     pred_NR = exp(rnorm(10000, mean = pred_Ratios_NutrientContent$pred_log_NP_fromDryP[X], 
                         sd = pred_Ratios_NutrientContent$pred_log_NP_fromDryP_SD[X])) * (14/31)
     
-    # Wet Weight N
+    # Generates a distribution of predicted wet-weight N values based on observed wet-weight P values and predicted N:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$WetWeight_Pwhole[X] * pred_NR)
     
+    # Obtains mean estimated wet-weight N value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_WetN[X] <- mean(pred_temp)
     pred_Ratios_NutrientContent$derived_WetN_SD[X] <- sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_WetN_SD_logit[X] = sd(qlogis(pred_temp/100))
     
-    # Dry Weight N
+    # Generates a distribution of predicted wet-weight N values based on observed dry-weight P values and predicted N:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$DryWeight_Pwhole[X] * pred_NR)
     
+    # Obtains mean estimated dry-weight N value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_DryN[X] <- mean(pred_temp)
     pred_Ratios_NutrientContent$derived_DryN_SD[X] <- sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_DryN_SD_logit[X] = sd(qlogis(pred_temp/100))
     
   }
     else { if (!is.na(pred_Ratios_NutrientContent$pred_log_CN_fromDryC[X])) {
       
+      # The following generates a random distribution of 10,000 predicted C:N values. This code takes the predicted values out of log-space and then transforms them to a molar basis.
       pred_NR = exp(rnorm(10000, mean = pred_Ratios_NutrientContent$pred_log_CN_fromDryC[X],
                           sd = pred_Ratios_NutrientContent$pred_log_CN_fromDryC_SD[X]))
       
-      # Wet Weight N
+      # Generates a distribution of predicted wet-weight N values based on observed wet-weight C values and predicted C:N ratios from the corresponding model.
       pred_temp = ((pred_Ratios_NutrientContent$WetWeight_C[X] * (14/12)) / pred_NR)
       
+      # Obtains mean estimated wet-weight N value with associated standard deviation from the generated distribution.
       pred_Ratios_NutrientContent$derived_WetN[X] <- mean(pred_temp)
       pred_Ratios_NutrientContent$derived_WetN_SD[X] <- sd(pred_temp)
-      pred_Ratios_NutrientContent$derived_WetN_SD_logit[X] = sd(qlogis(pred_temp/100))
       
-      # Dry Weight N
+      # Generates a distribution of predicted dry-weight N values based on observed dry-weight C values and predicted C:N ratios from the corresponding model.
       pred_temp = ((pred_Ratios_NutrientContent$DryWeight_C[X] * (14/12)) / pred_NR)
       
+      # Obtains mean estimated dry-weight N value with associated standard deviation from the generated distribution.
       pred_Ratios_NutrientContent$derived_DryN[X] <- mean(pred_temp)
       pred_Ratios_NutrientContent$derived_DryN_SD[X] <- sd(pred_temp)
-      pred_Ratios_NutrientContent$derived_DryN_SD_logit[X] = sd(qlogis(pred_temp/100))
     }
       else {NA}
     }}}
@@ -894,6 +894,7 @@ for (X in 1:nrow(pred_Ratios_NutrientContent)) {
 
 ##### Deriving P from Predicted Nutrient Ratios #####
 
+# Generated the columns to be populated with estimates of both dry- and wet-based P composition values.
 pred_Ratios_NutrientContent$derived_WetP <- NA
 pred_Ratios_NutrientContent$derived_WetP_SD <- NA
 pred_Ratios_NutrientContent$derived_WetP_SD_logit <- NA
@@ -905,50 +906,53 @@ pred_Ratios_NutrientContent$derived_DryP_SD_logit <- NA
 for (X in 1:nrow(pred_Ratios_NutrientContent)) {
   if (!is.na(pred_Ratios_NutrientContent$pred_log_CP_fromDryC[X])){
     
+    # The following generates a random distribution of 10,000 predicted C:P values. This code takes the predicted values out of log-space and then transforms them to a molar basis.
     pred_NR = exp(rnorm(10000, mean = pred_Ratios_NutrientContent$pred_log_CP_fromDryC[X], 
                         sd = pred_Ratios_NutrientContent$pred_log_CP_fromDryC_SD[X]))
     
-    # Wet Weight P
+    # Generates a distribution of predicted wet-weight P values based on observed wet-weight C values and predicted C:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$WetWeight_C[X] * (31/12)) / pred_NR
     
+    # Obtains mean estimated wet-weight P value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_WetP[X] <- mean(pred_temp)
     pred_Ratios_NutrientContent$derived_WetP_SD[X] <- sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_WetP_SD_logit[X] <- sd(qlogis(pred_temp/100))
     
-    # Dry Weight P
+    # Generates a distribution of predicted wet-weight P values based on observed dry-weight C values and predicted C:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$DryWeight_C[X] * (31/12)) / pred_NR
     
+    # Obtains mean estimated dry-weight P value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_DryP[X] <- mean(pred_temp)
     pred_Ratios_NutrientContent$derived_DryP_SD[X] <- sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_DryP_SD_logit[X] <- sd(qlogis(pred_temp/100))
     
   } 
   else { if (!is.na(pred_Ratios_NutrientContent$pred_log_NP_fromDryN[X])) {
     
+    # The following generates a random distribution of 10,000 predicted N:P values. This code takes the predicted values out of log-space and then transforms them to a molar basis.
     pred_NR = exp(rnorm(10000, mean = pred_Ratios_NutrientContent$pred_log_NP_fromDryN[X], 
                         sd = pred_Ratios_NutrientContent$pred_log_NP_fromDryN_SD[X]))
     
-    # Wet Weight P
+    # Generates a distribution of predicted wet-weight P values based on observed wet-weight N values and predicted N:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$WetWeight_N[X] * (31/14)) / pred_NR
     
+    # Obtains mean estimated wet-weight P value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_WetP[X] <- mean(pred_temp)
     pred_Ratios_NutrientContent$derived_WetP_SD[X] <- sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_WetP_SD_logit[X] <- sd(qlogis(pred_temp/100))
     
-    # Dry Weight P
+    # Generates a distribution of predicted dry-weight P values based on observed dry-weight N values and predicted N:P ratios from the corresponding model.
     pred_temp = (pred_Ratios_NutrientContent$DryWeight_N[X] * (31/14)) / pred_NR
     
+    # Obtains mean estimated dry-weight P value with associated standard deviation from the generated distribution.
     pred_Ratios_NutrientContent$derived_DryP[X] <- mean(pred_temp)
     pred_Ratios_NutrientContent$derived_DryP_SD[X] <- sd(pred_temp)
-    pred_Ratios_NutrientContent$derived_DryP_SD_logit[X] <- sd(qlogis(pred_temp/100))
     
   }
     else { if (!is.na(pred_Ratios_NutrientContent$pred_log_NP_fromWetN[X])) {
       
+      # The following generates a random distribution of 10,000 predicted N:P values. This code takes the predicted values out of log-space and then transforms them to a molar basis.
       pred_NR = exp(rnorm(10000, mean = pred_Ratios_NutrientContent$pred_log_NP_fromWetN[X],
                           sd = pred_Ratios_NutrientContent$pred_log_NP_fromWetN_SD[X]))
       
-      # Wet Weight P
+      # Generates a distribution of predicted wet-weight P values based on observed wet-weight N values and predicted N:P ratios from the corresponding model.
       pred_temp = (pred_Ratios_NutrientContent$WetWeight_N[X] * (31/14)) / pred_NR
       
       pred_Ratios_NutrientContent$derived_WetP[X] <- mean(pred_temp)
