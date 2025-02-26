@@ -579,20 +579,27 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 ###### Super-Class ######
 
+# There were also two super-classes that required us to get estimates for. This were the groups Chondrichthyes (TaxonKey = 200538) and Osteichthyes (TaxonKey = 210006).
+
 # Carbon averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the super-class listed in the SAU taxa table (specified below).
   if (AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 200538 | AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 210006) {
+    # The second `ifelse` bracket checks if, for row Z in the dataset, there is at least one species with a C composition value available for the listed super-class Otherwise, the for loop returns an 'NA'.
     if (AggregatedNutrientContent_AllLevels$super_class[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_C)]$super_class) {
       
+      # The following code generates a data frame with the set of species-level C values that are available for the super-class listed in row Z.
       use_df <- AggregatedNutrientContent_species[AggregatedNutrientContent_species$super_class == 
                                                     AggregatedNutrientContent_AllLevels$super_class[Z]]
       
+      # Obtains the mean C composition value for the super-class in row Z.
       AggregatedNutrientContent_AllLevels$mean_WW_C[Z] <- mean(use_df$mean_WW_C, na.rm = T)
       
-      v <- sum((use_df$compound_WW_C_SD^2 + (use_df$mean_WW_C - AggregatedNutrientContent_AllLevels$mean_WW_C[Z])^2), 
+      # Obtains the compounded SD for the C composition values for the super-class in row Z.
+      comp_SD <- sum((use_df$compound_WW_C_SD^2 + (use_df$mean_WW_C - AggregatedNutrientContent_AllLevels$mean_WW_C[Z])^2), 
                na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_C_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_C_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
@@ -601,18 +608,23 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 # Nitrogen averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the super-class listed in the SAU taxa table (specified below).
   if (AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 200538 | AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 210006) {
+    # The second `ifelse` bracket checks if, for row Z in the dataset, there is at least one species with a N composition value available for the listed super-class Otherwise, the for loop returns an 'NA'.
     if (AggregatedNutrientContent_AllLevels$super_class[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_N)]$super_class) {
       
+      # The following code generates a data frame with the set of species-level N values that are available for the super-class listed in row Z.
       use_df <- AggregatedNutrientContent_species[AggregatedNutrientContent_species$super_class == 
                                                     AggregatedNutrientContent_AllLevels$super_class[Z]]
       
+      # Obtains the mean N composition value for the super-class in row Z.
       AggregatedNutrientContent_AllLevels$mean_WW_N[Z] <- mean(use_df$mean_WW_N, na.rm = T)
       
-      v <- sum((use_df$compound_WW_N_SD^2 + (use_df$mean_WW_N - AggregatedNutrientContent_AllLevels$mean_WW_N[Z])^2), 
+      # Obtains the compounded SD for the N composition values for the super-class in row Z.
+      comp_SD <- sum((use_df$compound_WW_N_SD^2 + (use_df$mean_WW_N - AggregatedNutrientContent_AllLevels$mean_WW_N[Z])^2), 
                na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_N_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_N_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
@@ -623,31 +635,28 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 # Phosphorus averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the super-class listed in the SAU taxa table (specified below).
   if (AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 200538 | AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 210006) {
+    # The second `ifelse` bracket checks if, for row Z in the dataset, there is at least one species with a P composition value available for the listed super-class Otherwise, the for loop returns an 'NA'.
     if (AggregatedNutrientContent_AllLevels$super_class[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_P)]$super_class) {
       
+      # The following code generates a data frame with the set of species-level P values that are available for the super-class listed in row Z.
       use_df <- AggregatedNutrientContent_species[AggregatedNutrientContent_species$super_class == 
                                                     AggregatedNutrientContent_AllLevels$super_class[Z]]
       
+      # Obtains the mean P composition value for the super-class in row Z.
       AggregatedNutrientContent_AllLevels$mean_WW_P[Z] <- mean(use_df$mean_WW_P, na.rm = T)
       
-      v <- sum((use_df$compound_WW_P_SD^2 + (use_df$mean_WW_P - AggregatedNutrientContent_AllLevels$mean_WW_P[Z])^2), 
+      # Obtains the compounded SD for the P composition values for the super-class in row Z.
+      comp_SD <- sum((use_df$compound_WW_P_SD^2 + (use_df$mean_WW_P - AggregatedNutrientContent_AllLevels$mean_WW_P[Z])^2), 
                na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_P_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_P_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
 
 
-
-view(AggregatedNutrientContent_AllLevels[between(AggregatedNutrientContent_AllLevels$TaxonKey, 200000, 299999)])
-hist(AggregatedNutrientContent_AllLevels[between(AggregatedNutrientContent_AllLevels$TaxonKey, 200000, 299999)]$mean_WW_C)
-hist(AggregatedNutrientContent_AllLevels[between(AggregatedNutrientContent_AllLevels$TaxonKey, 200000, 299999)]$compound_WW_C_SD)
-hist(AggregatedNutrientContent_AllLevels[between(AggregatedNutrientContent_AllLevels$TaxonKey, 200000, 299999)]$mean_WW_N)
-hist(AggregatedNutrientContent_AllLevels[between(AggregatedNutrientContent_AllLevels$TaxonKey, 200000, 299999)]$compound_WW_N_SD)
-hist(AggregatedNutrientContent_AllLevels[between(AggregatedNutrientContent_AllLevels$TaxonKey, 200000, 299999)]$mean_WW_P)
-hist(AggregatedNutrientContent_AllLevels[between(AggregatedNutrientContent_AllLevels$TaxonKey, 200000, 299999)]$compound_WW_P_SD)
 
 
 
@@ -655,22 +664,29 @@ hist(AggregatedNutrientContent_AllLevels[between(AggregatedNutrientContent_AllLe
 
 ##### Phylum- and Sub-Phylum Level #####
 
+# The following pieces average out nutrient compositions for the phylums and sub-phylums which are listed as TaxonKeys 100000 to 199999.
+
 ###### Sub-phylum ######
 
 # Carbon averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the sub-phyla listed in the SAU taxa table (TaxonKey >= 100000 & <= 199999).
   if (between(AggregatedNutrientContent_AllLevels$TaxonKey[Z], 100000, 199999)) {
+    # The second `ifelse` bracket checks if, for row Z in the dataset, there is at least one species with a C composition value available for the listed sub-phylum. Otherwise, the for loop returns an 'NA'.
     if (AggregatedNutrientContent_AllLevels$sub_phylum[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_C)]$sub_phylum) {
       
+      # The following code generates a data frame with the set of species-level C values that are available for the sub-phylum listed in row Z.
       use_df <- AggregatedNutrientContent_species[AggregatedNutrientContent_species$sub_phylum == 
                                                     AggregatedNutrientContent_AllLevels$sub_phylum[Z]]
       
+      # Obtains the mean C composition value for the sub-phylum in row Z.
       AggregatedNutrientContent_AllLevels$mean_WW_C[Z] <- mean(use_df$mean_WW_C, na.rm = T)
       
-      v <- sum((use_df$compound_WW_C_SD^2 + (use_df$mean_WW_C - AggregatedNutrientContent_AllLevels$mean_WW_C[Z])^2), 
+      # Obtains the compounded SD for the C composition values for the sub-phylum in row Z.
+      comp_SD <- sum((use_df$compound_WW_C_SD^2 + (use_df$mean_WW_C - AggregatedNutrientContent_AllLevels$mean_WW_C[Z])^2), 
                na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_C_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_C_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
@@ -679,18 +695,23 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 # Nitrogen averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the sub-phyla listed in the SAU taxa table (TaxonKey >= 100000 & <= 199999).
   if (between(AggregatedNutrientContent_AllLevels$TaxonKey[Z], 100000, 199999)) {
+    # The second `ifelse` bracket checks if, for row Z in the dataset, there is at least one species with a N composition value available for the listed sub-phylum. Otherwise, the for loop returns an 'NA'.
     if (AggregatedNutrientContent_AllLevels$sub_phylum[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_N)]$sub_phylum) {
       
+      # The following code generates a data frame with the set of species-level N values that are available for the sub-phylum listed in row Z.
       use_df <- AggregatedNutrientContent_species[AggregatedNutrientContent_species$sub_phylum == 
                                                     AggregatedNutrientContent_AllLevels$sub_phylum[Z]]
       
+      # Obtains the mean N composition value for the sub-phylum in row Z.
       AggregatedNutrientContent_AllLevels$mean_WW_N[Z] <- mean(use_df$mean_WW_N, na.rm = T)
       
-      v <- sum((use_df$compound_WW_N_SD^2 + (use_df$mean_WW_N - AggregatedNutrientContent_AllLevels$mean_WW_N[Z])^2), 
+      # Obtains the compounded SD for the N composition values for the sub-phylum in row Z.
+      comp_SD <- sum((use_df$compound_WW_N_SD^2 + (use_df$mean_WW_N - AggregatedNutrientContent_AllLevels$mean_WW_N[Z])^2), 
                na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_N_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_N_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
@@ -699,18 +720,23 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 # Phosphorus averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the sub-phyla listed in the SAU taxa table (TaxonKey >= 100000 & <= 199999).
   if (between(AggregatedNutrientContent_AllLevels$TaxonKey[Z], 100000, 199999)) {
+    # The second `ifelse` bracket checks if, for row Z in the dataset, there is at least one species with a P composition value available for the listed sub-phylum. Otherwise, the for loop returns an 'NA'.
     if (AggregatedNutrientContent_AllLevels$sub_phylum[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_P)]$sub_phylum) {
       
+      # The following code generates a data frame with the set of species-level P values that are available for the sub-phylum listed in row Z.
       use_df <- AggregatedNutrientContent_species[AggregatedNutrientContent_species$sub_phylum == 
                                                     AggregatedNutrientContent_AllLevels$sub_phylum[Z]]
       
+      # Obtains the mean P composition value for the sub-phylum in row Z.
       AggregatedNutrientContent_AllLevels$mean_WW_P[Z] <- mean(use_df$mean_WW_P, na.rm = T)
       
-      v <- sum((use_df$compound_WW_P_SD^2 + (use_df$mean_WW_P - AggregatedNutrientContent_AllLevels$mean_WW_P[Z])^2), 
+      # Obtains the compounded SD for the P composition values for the sub-phylum in row Z.
+      comp_SD <- sum((use_df$compound_WW_P_SD^2 + (use_df$mean_WW_P - AggregatedNutrientContent_AllLevels$mean_WW_P[Z])^2), 
                na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_P_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_P_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
@@ -721,18 +747,23 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 # Carbon averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the phyla listed in the SAU taxa table (TaxonKey >= 100000 & <= 199999).
   if (between(AggregatedNutrientContent_AllLevels$TaxonKey[Z], 100000, 199999)) {
+    # The second `ifelse` bracket checks if, for row Z in the dataset, there is at least one species with a C composition value available for the listed phylum. Otherwise, the for loop returns an 'NA'.
     if (AggregatedNutrientContent_AllLevels$phylum[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_C)]$phylum) {
       
+      # The following code generates a data frame with the set of species-level C values that are available for the phylum listed in row Z.
       use_df <- AggregatedNutrientContent_species[AggregatedNutrientContent_species$phylum == 
                                                     AggregatedNutrientContent_AllLevels$phylum[Z]]
       
+      # Obtains the mean C composition value for the phylum in row Z.
       AggregatedNutrientContent_AllLevels$mean_WW_C[Z] <- mean(use_df$mean_WW_C, na.rm = T)
       
-      v <- sum((use_df$compound_WW_C_SD^2 + (use_df$mean_WW_C - AggregatedNutrientContent_AllLevels$mean_WW_C[Z])^2), 
-               na.rm = T)/nrow(use_df)
+      # Obtains the compounded SD for the C composition values for the phylum in row Z.
+      comp_SD <- sum((use_df$compound_WW_C_SD^2 + (use_df$mean_WW_C - AggregatedNutrientContent_AllLevels$mean_WW_C[Z])^2), 
+                     na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_C_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_C_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
@@ -741,18 +772,23 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 # Nitrogen averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the phyla listed in the SAU taxa table (TaxonKey >= 100000 & <= 199999).
   if (between(AggregatedNutrientContent_AllLevels$TaxonKey[Z], 100000, 199999)) {
+    # The second `ifelse` bracket checks if, for row Z in the dataset, there is at least one species with a N composition value available for the listed phylum. Otherwise, the for loop returns an 'NA'.
     if (AggregatedNutrientContent_AllLevels$phylum[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_N)]$phylum) {
       
+      # The following code generates a data frame with the set of species-level N values that are available for the phylum listed in row Z.
       use_df <- AggregatedNutrientContent_species[AggregatedNutrientContent_species$phylum == 
                                                     AggregatedNutrientContent_AllLevels$phylum[Z]]
       
+      # Obtains the mean N composition value for the phylum in row Z.
       AggregatedNutrientContent_AllLevels$mean_WW_N[Z] <- mean(use_df$mean_WW_N, na.rm = T)
       
-      v <- sum((use_df$compound_WW_N_SD^2 + (use_df$mean_WW_N - AggregatedNutrientContent_AllLevels$mean_WW_N[Z])^2), 
-               na.rm = T)/nrow(use_df)
+      # Obtains the compounded SD for the N composition values for the phylum in row Z.
+      comp_SD <- sum((use_df$compound_WW_N_SD^2 + (use_df$mean_WW_N - AggregatedNutrientContent_AllLevels$mean_WW_N[Z])^2), 
+                     na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_N_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_N_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
@@ -761,18 +797,23 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 # Phosphorus averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the phyla listed in the SAU taxa table (TaxonKey >= 100000 & <= 199999).
   if (between(AggregatedNutrientContent_AllLevels$TaxonKey[Z], 100000, 199999)) {
+    # The second `ifelse` bracket checks if, for row Z in the dataset, there is at least one species with a P composition value available for the listed phylum. Otherwise, the for loop returns an 'NA'.
     if (AggregatedNutrientContent_AllLevels$phylum[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_P)]$phylum) {
       
+      # The following code generates a data frame with the set of species-level P values that are available for the phylum listed in row Z.
       use_df <- AggregatedNutrientContent_species[AggregatedNutrientContent_species$phylum == 
                                                     AggregatedNutrientContent_AllLevels$phylum[Z]]
       
+      # Obtains the mean P composition value for the phylum in row Z.
       AggregatedNutrientContent_AllLevels$mean_WW_P[Z] <- mean(use_df$mean_WW_P, na.rm = T)
       
-      v <- sum((use_df$compound_WW_P_SD^2 + (use_df$mean_WW_P - AggregatedNutrientContent_AllLevels$mean_WW_P[Z])^2), 
-               na.rm = T)/nrow(use_df)
+      # Obtains the compounded SD for the P composition values for the phylum in row Z.
+      comp_SD <- sum((use_df$compound_WW_P_SD^2 + (use_df$mean_WW_P - AggregatedNutrientContent_AllLevels$mean_WW_P[Z])^2), 
+                     na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_P_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_P_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
@@ -781,10 +822,11 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 ###### Invertebrates ######
 
-# Did not have data on any Echinodermata so the average for all invertebrates was used for that phylum.
+# We did not have any nutrient composition data for the group Echinodermata so the average nutrient compositions across  all invertebrates was used for that phylum.
 
 # Carbon averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the inveretbrates present in the SAU taxa table (TaxonKey = 100077).
   if (AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 100077 | AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 190277) {
     if (AggregatedNutrientContent_AllLevels$sub_phylum[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_C)]$sub_phylum) {
       
@@ -792,10 +834,10 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
       
       AggregatedNutrientContent_AllLevels$mean_WW_C[Z] <- mean(use_df$mean_WW_C, na.rm = T)
       
-      v <- sum((use_df$compound_WW_C_SD^2 + (use_df$mean_WW_C - AggregatedNutrientContent_AllLevels$mean_WW_C[Z])^2), 
+      comp_SD <- sum((use_df$compound_WW_C_SD^2 + (use_df$mean_WW_C - AggregatedNutrientContent_AllLevels$mean_WW_C[Z])^2), 
                na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_C_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_C_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
@@ -804,6 +846,7 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
 
 # Nitrogen averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the inveretbrates present in the SAU taxa table (TaxonKey = 100077).
   if (AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 100077 | AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 190277) {
     if (AggregatedNutrientContent_AllLevels$sub_phylum[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_N)]$sub_phylum) {
       
@@ -811,16 +854,17 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
       
       AggregatedNutrientContent_AllLevels$mean_WW_N[Z] <- mean(use_df$mean_WW_N, na.rm = T)
       
-      v <- sum((use_df$compound_WW_N_SD^2 + (use_df$mean_WW_N - AggregatedNutrientContent_AllLevels$mean_WW_N[Z])^2), 
+      comp_SD <- sum((use_df$compound_WW_N_SD^2 + (use_df$mean_WW_N - AggregatedNutrientContent_AllLevels$mean_WW_N[Z])^2), 
                na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_N_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_N_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
 
 # Phosphorus averaging
 for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
+  # The first `ifelse` bracket filters out the inveretbrates present in the SAU taxa table (TaxonKey = 100077).
   if (AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 100077 | AggregatedNutrientContent_AllLevels$TaxonKey[Z] == 190277) {
     if (AggregatedNutrientContent_AllLevels$sub_phylum[Z] %in% AggregatedNutrientContent_species[!is.na(mean_WW_P)]$sub_phylum) {
       
@@ -828,10 +872,269 @@ for (Z in 1:nrow(AggregatedNutrientContent_AllLevels)){
       
       AggregatedNutrientContent_AllLevels$mean_WW_P[Z] <- mean(use_df$mean_WW_P, na.rm = T)
       
-      v <- sum((use_df$compound_WW_P_SD^2 + (use_df$mean_WW_P - AggregatedNutrientContent_AllLevels$mean_WW_P[Z])^2), 
+      comp_SD <- sum((use_df$compound_WW_P_SD^2 + (use_df$mean_WW_P - AggregatedNutrientContent_AllLevels$mean_WW_P[Z])^2), 
                na.rm = T)/nrow(use_df)
       
-      AggregatedNutrientContent_AllLevels$compound_WW_P_SD[Z] <- sqrt(v)
+      AggregatedNutrientContent_AllLevels$compound_WW_P_SD[Z] <- sqrt(comp_SD)
       
     }} else (NA)
 }
+
+
+
+#### ASSIGNING NUTRIENT COMPOSITIONS TO SPECIES/GROUPS WITH NO DATA ####
+
+# For all species and taxonomic groups which still lacked data, we assigned the mean nutrient compositions and standard deviations from the next lowest taxonomic level. For example, if a species had no nutrient composition data available, but a mean and standard deviation of nutrient composition were available for its genus, we assigned the genus-level values to the data-deficient species. This process ensured that all species and taxonomic groups with reported industrial fisheries catches were assigned a C, N, and P composition
+
+# Creates a new data frame to finish populating with nutrient compositions for all species and taxonomic groups.
+IndustrialTaxa_NutrientContent <- AggregatedNutrientContent_AllLevels
+
+##### Assigning Values #####
+
+# Carbon
+for (Z in 1:nrow(IndustrialTaxa_NutrientContent)){
+  # Filters rows that are still missing a mean C composition value.
+  if (is.na(IndustrialTaxa_NutrientContent$mean_WW_C[Z])) {
+    # The following 'ifelse' ladder goes through all of the corresponding taxonomic levels until a mean C composition can be assigned for that species or group.
+    if(IndustrialTaxa_NutrientContent$genus[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_C)]$scientific_name) {
+      
+      use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                      IndustrialTaxa_NutrientContent$genus[Z]]
+      
+      IndustrialTaxa_NutrientContent$mean_WW_C[Z] <- use_df$mean_WW_C
+      IndustrialTaxa_NutrientContent$compound_WW_C_SD[Z] <- use_df$compound_WW_C_SD} else(
+        
+        if(IndustrialTaxa_NutrientContent$family[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_C)]$scientific_name) {
+          
+          use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                          IndustrialTaxa_NutrientContent$family[Z]]
+          
+          IndustrialTaxa_NutrientContent$mean_WW_C[Z] <- use_df$mean_WW_C
+          IndustrialTaxa_NutrientContent$compound_WW_C_SD[Z] <- use_df$compound_WW_C_SD} else (
+            
+            if(IndustrialTaxa_NutrientContent$order[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_C)]$scientific_name) {
+              
+              use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                              IndustrialTaxa_NutrientContent$order[Z]]
+              
+              IndustrialTaxa_NutrientContent$mean_WW_C[Z] <- use_df$mean_WW_C
+              IndustrialTaxa_NutrientContent$compound_WW_C_SD[Z] <- use_df$compound_WW_C_SD} else (
+                
+                if(IndustrialTaxa_NutrientContent$super_order[Z] %in% 
+                   AggregatedNutrientContent_AllLevels[!is.na(mean_WW_C)]$scientific_name) {
+                  
+                  use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                  IndustrialTaxa_NutrientContent$super_order[Z]]
+                  
+                  IndustrialTaxa_NutrientContent$mean_WW_C[Z] <- use_df$mean_WW_C
+                  IndustrialTaxa_NutrientContent$compound_WW_C_SD[Z] <- use_df$compound_WW_C_SD} else (
+                    
+                    if(IndustrialTaxa_NutrientContent$class[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_C)]$scientific_name) {
+                      
+                      use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                      IndustrialTaxa_NutrientContent$class[Z]]
+                      
+                      IndustrialTaxa_NutrientContent$mean_WW_C[Z] <- use_df$mean_WW_C
+                      IndustrialTaxa_NutrientContent$compound_WW_C_SD[Z] <- use_df$compound_WW_C_SD} else (
+                        
+                        if(IndustrialTaxa_NutrientContent$super_class[Z] %in% 
+                           AggregatedNutrientContent_AllLevels[!is.na(mean_WW_C)]$scientific_name) {
+                          
+                          use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                          IndustrialTaxa_NutrientContent$super_class[Z]]
+                          
+                          IndustrialTaxa_NutrientContent$mean_WW_C[Z] <- use_df$mean_WW_C
+                          IndustrialTaxa_NutrientContent$compound_WW_C_SD[Z] <- use_df$compound_WW_C_SD} else (
+                            
+                            if(IndustrialTaxa_NutrientContent$sub_phylum[Z] %in% 
+                               AggregatedNutrientContent_AllLevels[!is.na(mean_WW_C)]$scientific_name) {
+                              
+                              use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name ==
+                                                                              IndustrialTaxa_NutrientContent$sub_phylum[Z]]
+                              
+                              IndustrialTaxa_NutrientContent$mean_WW_C[Z] <- use_df$mean_WW_C
+                              IndustrialTaxa_NutrientContent$compound_WW_C_SD[Z] <- use_df$compound_WW_C_SD} else (
+                                
+                                if(IndustrialTaxa_NutrientContent$phylum[Z] %in% 
+                                   AggregatedNutrientContent_AllLevels[!is.na(mean_WW_C)]$scientific_name) {
+                                  
+                                  use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name ==
+                                                                                  IndustrialTaxa_NutrientContent$phylum[Z]]
+                                  
+                                  IndustrialTaxa_NutrientContent$mean_WW_C[Z] <- use_df$mean_WW_C
+                                  IndustrialTaxa_NutrientContent$compound_WW_C_SD[Z] <- use_df$compound_WW_C_SD}
+                                
+                              )))))))} else (NA)
+}
+
+
+
+# Nitrogen
+for (Z in 1:nrow(IndustrialTaxa_NutrientContent)){
+  # Filters rows still missing a mean N composition value.
+  if (is.na(IndustrialTaxa_NutrientContent$mean_WW_N[Z])) {
+    # The following 'ifelse' ladder goes through all of the corresponding taxonomic levels until a mean N composition can be assigned for that species or group.
+    if(IndustrialTaxa_NutrientContent$genus[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_N)]$scientific_name) {
+      
+      use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                      IndustrialTaxa_NutrientContent$genus[Z]]
+      
+      IndustrialTaxa_NutrientContent$mean_WW_N[Z] <- use_df$mean_WW_N
+      IndustrialTaxa_NutrientContent$compound_WW_N_SD[Z] <- use_df$compound_WW_N_SD} else(
+        
+        if(IndustrialTaxa_NutrientContent$family[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_N)]$scientific_name) {
+          
+          use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                          IndustrialTaxa_NutrientContent$family[Z]]
+          
+          IndustrialTaxa_NutrientContent$mean_WW_N[Z] <- use_df$mean_WW_N
+          IndustrialTaxa_NutrientContent$compound_WW_N_SD[Z] <- use_df$compound_WW_N_SD} else (
+            
+            if(IndustrialTaxa_NutrientContent$order[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_N)]$scientific_name) {
+              
+              use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                              IndustrialTaxa_NutrientContent$order[Z]]
+              
+              IndustrialTaxa_NutrientContent$mean_WW_N[Z] <- use_df$mean_WW_N
+              IndustrialTaxa_NutrientContent$compound_WW_N_SD[Z] <- use_df$compound_WW_N_SD} else (
+                
+                if(IndustrialTaxa_NutrientContent$super_order[Z] %in% 
+                   AggregatedNutrientContent_AllLevels[!is.na(mean_WW_N)]$scientific_name) {
+                  
+                  use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                  IndustrialTaxa_NutrientContent$super_order[Z]]
+                  
+                  IndustrialTaxa_NutrientContent$mean_WW_N[Z] <- use_df$mean_WW_N
+                  IndustrialTaxa_NutrientContent$compound_WW_N_SD[Z] <- use_df$compound_WW_N_SD} else (
+                    
+                    if(IndustrialTaxa_NutrientContent$class[Z] %in% 
+                       AggregatedNutrientContent_AllLevels[!is.na(mean_WW_N)]$scientific_name) {
+                      
+                      use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                      IndustrialTaxa_NutrientContent$class[Z]]
+                      
+                      IndustrialTaxa_NutrientContent$mean_WW_N[Z] <- use_df$mean_WW_N
+                      IndustrialTaxa_NutrientContent$compound_WW_N_SD[Z] <- use_df$compound_WW_N_SD} else (
+                        
+                        if(IndustrialTaxa_NutrientContent$super_class[Z] %in% 
+                           AggregatedNutrientContent_AllLevels[!is.na(mean_WW_N)]$scientific_name) {
+                          
+                          use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                          IndustrialTaxa_NutrientContent$super_class[Z]]
+                          
+                          IndustrialTaxa_NutrientContent$mean_WW_N[Z] <- use_df$mean_WW_N
+                          IndustrialTaxa_NutrientContent$compound_WW_N_SD[Z] <- use_df$compound_WW_N_SD} else (
+                            
+                            if(IndustrialTaxa_NutrientContent$sub_phylum[Z] %in% 
+                               AggregatedNutrientContent_AllLevels[!is.na(mean_WW_N)]$scientific_name) {
+                              
+                              use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                              IndustrialTaxa_NutrientContent$sub_phylum[Z]]
+                              
+                              IndustrialTaxa_NutrientContent$mean_WW_N[Z] <- use_df$mean_WW_N
+                              IndustrialTaxa_NutrientContent$compound_WW_N_SD[Z] <- use_df$compound_WW_N_SD} else (
+                                
+                                if(IndustrialTaxa_NutrientContent$phylum[Z] %in% 
+                                   AggregatedNutrientContent_AllLevels[!is.na(mean_WW_N)]$scientific_name) {
+                                  
+                                  use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                                  IndustrialTaxa_NutrientContent$phylum[Z]]
+                                  
+                                  IndustrialTaxa_NutrientContent$mean_WW_N[Z] <- use_df$mean_WW_N
+                                  IndustrialTaxa_NutrientContent$compound_WW_N_SD[Z] <- use_df$compound_WW_N_SD}
+                                
+                              )))))))} else (NA)
+}
+
+
+
+# Phosphorus
+for (Z in 1:nrow(IndustrialTaxa_NutrientContent)){
+  # Filters rows still missing a mean P composition value.
+  if (is.na(IndustrialTaxa_NutrientContent$mean_WW_P[Z])) {
+    # The following 'ifelse' ladder goes through all of the corresponding taxonomic levels until a mean P composition can be assigned for that species or group.
+    if(IndustrialTaxa_NutrientContent$genus[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_P)]$scientific_name) {
+      
+      use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                      IndustrialTaxa_NutrientContent$genus[Z]]
+      
+      IndustrialTaxa_NutrientContent$mean_WW_P[Z] <- use_df$mean_WW_P
+      IndustrialTaxa_NutrientContent$compound_WW_P_SD[Z] <- use_df$compound_WW_P_SD} else(
+        
+        if(IndustrialTaxa_NutrientContent$family[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_P)]$scientific_name) {
+          
+          use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                          IndustrialTaxa_NutrientContent$family[Z]]
+          
+          IndustrialTaxa_NutrientContent$mean_WW_P[Z] <- use_df$mean_WW_P
+          IndustrialTaxa_NutrientContent$compound_WW_P_SD[Z] <- use_df$compound_WW_P_SD} else (
+            
+            if(IndustrialTaxa_NutrientContent$order[Z] %in% AggregatedNutrientContent_AllLevels[!is.na(mean_WW_P)]$scientific_name) {
+              
+              use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                              IndustrialTaxa_NutrientContent$order[Z]]
+              
+              IndustrialTaxa_NutrientContent$mean_WW_P[Z] <- use_df$mean_WW_P
+              IndustrialTaxa_NutrientContent$compound_WW_P_SD[Z] <- use_df$compound_WW_P_SD} else (
+                
+                if(IndustrialTaxa_NutrientContent$super_order[Z] %in% 
+                   AggregatedNutrientContent_AllLevels[!is.na(mean_WW_P)]$scientific_name) {
+                  
+                  use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                  IndustrialTaxa_NutrientContent$super_order[Z]]
+                  
+                  IndustrialTaxa_NutrientContent$mean_WW_P[Z] <- use_df$mean_WW_P
+                  IndustrialTaxa_NutrientContent$compound_WW_P_SD[Z] <- use_df$compound_WW_P_SD} else (
+                    
+                    if(IndustrialTaxa_NutrientContent$class[Z] %in% 
+                       AggregatedNutrientContent_AllLevels[!is.na(mean_WW_P)]$scientific_name) {
+                      
+                      use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                      IndustrialTaxa_NutrientContent$class[Z]]
+                      
+                      IndustrialTaxa_NutrientContent$mean_WW_P[Z] <- use_df$mean_WW_P
+                      IndustrialTaxa_NutrientContent$compound_WW_P_SD[Z] <- use_df$compound_WW_P_SD} else (
+                        
+                        if(IndustrialTaxa_NutrientContent$super_class[Z] %in% 
+                           AggregatedNutrientContent_AllLevels[!is.na(mean_WW_P)]$scientific_name) {
+                          
+                          use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                          IndustrialTaxa_NutrientContent$super_class[Z]]
+                          
+                          IndustrialTaxa_NutrientContent$mean_WW_P[Z] <- use_df$mean_WW_P
+                          IndustrialTaxa_NutrientContent$compound_WW_P_SD[Z] <- use_df$compound_WW_P_SD} else (
+                            
+                            if(IndustrialTaxa_NutrientContent$sub_phylum[Z] %in% 
+                               AggregatedNutrientContent_AllLevels[!is.na(mean_WW_P)]$scientific_name) {
+                              
+                              use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                              IndustrialTaxa_NutrientContent$sub_phylum[Z]]
+                              
+                              IndustrialTaxa_NutrientContent$mean_WW_P[Z] <- use_df$mean_WW_P
+                              IndustrialTaxa_NutrientContent$compound_WW_P_SD[Z] <- use_df$compound_WW_P_SD} else (
+                                
+                                if(IndustrialTaxa_NutrientContent$phylum[Z] %in% 
+                                   AggregatedNutrientContent_AllLevels[!is.na(mean_WW_P)]$scientific_name) {
+                                  
+                                  use_df <- AggregatedNutrientContent_AllLevels[AggregatedNutrientContent_AllLevels$scientific_name == 
+                                                                                  IndustrialTaxa_NutrientContent$phylum[Z]]
+                                  
+                                  IndustrialTaxa_NutrientContent$mean_WW_P[Z] <- use_df$mean_WW_P
+                                  IndustrialTaxa_NutrientContent$compound_WW_P_SD[Z] <- use_df$compound_WW_P_SD
+                                }
+                                
+                              )))))))} else (NA)
+}
+
+
+
+
+#### INDUSTRIAL TAXA NUTRIENT COMPOSITION DATASET ####
+
+# The resulting data frame is the finished nutrient composition dataset that was used to calculate the nutrient extraction estimates in our study. This dataset, titled IndustrialTaxa_NutrientContent in this script, is provided as Supplementary Data 2 on the manuscript page and as IndustrialTaxa_NutrientContent in the GitHub repository and the Figshare repository.
+
+
+
+
+
+
