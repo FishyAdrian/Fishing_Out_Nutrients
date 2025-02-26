@@ -977,7 +977,7 @@ for (X in 1:nrow(pred_Ratios_NutrientContent)) {
 
 # After all possible nutrient composition predictions had been generated, we ran the following code for each taxa to preferentially select observed nutrient compositions and only use the predicted compositions if an observed value was not available. 
 
-# We did not have consisten SD data for nutrient compositions reported in the literature. Therefore, we used the mean SD and coefficient of variation for each nutrient's composition derived from Czamanski et al. 2011 (http://dx.doi.org/10.1007/s00227-011-1783-7) which did report SDs. We used these to calculate SD values for observed nutrient compositions. The mean coefficient of variation for each nutrient was as follows: C (0.0175), N(0.0097), and P(0.0528).
+# NOTE: For observed values, we did not record SDs since these were not always reported. However, to account for uncertainty in observed nutrient values, we assigned SDs based on the in-species coefficients of variation (CV) for each nutrient observed in Czamanski et al. (2011) (https://link.springer.com/article/10.1007/s00227-011-1783-7). The coefficients of variation for each nutrient were as follows: CV of C = 0.0175, CV of N = 0.0097, and CV of P = 0.0528. This assured that each observed and predicted value had an associated SD to be used in later calculations.
 
 # Filter out unnecessary columns.
 Observed_and_Predicted_NutrientContent <- pred_Ratios_NutrientContent[ , c(1:17, 42:53)]
