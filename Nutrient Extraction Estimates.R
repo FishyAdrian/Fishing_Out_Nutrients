@@ -1,3 +1,15 @@
+###############################################################################
+#                                                                             #
+#                           Fishing Out Nutrients                             #
+#                       Nutrient Extraction Estimates                         #
+#                                                                             #
+###############################################################################
+
+
+
+
+
+
 #### ESTIMATING NUTRIENT EXTRACTIONS ####
 
 # To account for uncertainties around producing nutrient extraction estimates, we generated 100 nutrient values drawn from a random normal distribution of each taxa's mean nutrient compositions for each row of the SAU dataset. The SAU data comprised 6.7+ million rows of data where each row of data had a distribution of 100 nutrient composition values for the row's corresponding taxa.
