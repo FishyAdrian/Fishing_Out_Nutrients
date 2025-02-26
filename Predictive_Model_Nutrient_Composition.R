@@ -906,6 +906,7 @@ pred_Ratios_NutrientContent$derived_DryP_SD_logit <- NA
 
 
 for (X in 1:nrow(pred_Ratios_NutrientContent)) {
+  # This `ifelse` bracket tells the for loop to, for row X, first use predicted C:P ratio values from the D_ME_CP_C model. If C:P values are not available through that model, then the for loop uses the predicted N:P values from the D_ME_NP_N model. And finally, if neither of the two previous models produced values, then the for loop uses predicted N:P ratio values from the W_ME_NP_N model. 
   if (!is.na(pred_Ratios_NutrientContent$pred_log_CP_fromDryC[X])){
     
     # The following generates a random distribution of 10,000 predicted C:P values. This code takes the predicted values out of log-space and then transforms them to a molar basis.
