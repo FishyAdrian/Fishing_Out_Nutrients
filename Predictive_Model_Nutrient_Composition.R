@@ -13,6 +13,7 @@
 
 
 #### NECESSARY PACKAGES ####
+
 library(tidyverse)
 library(data.table)
 library(ggplot2)
@@ -974,16 +975,19 @@ for (X in 1:nrow(pred_Ratios_NutrientContent)) {
 
 #### MERGING OBSERVED AND PREDICTED NUTRIENT DATA ####
 
-# The SDs assigned for observed nutrient compositions here are based on the in-species SDs found in Czamanski et al. 2011. The SDs found for within-species nutrient compositions were found and averaged. This was to account for some uncertainty in observed nutrient compositions when averaging observed and predicted nutrient compositions.
+# After all possible nutrient composition predictions had been generated, we ran the following code for each taxa to preferentially select observed nutrient compositions and only use the predicted compositions if an observed value was not available. 
 
+# We did not have consisten SD data for nutrient compositions reported in the literature. Therefore, we used the mean SD and coefficient of variation for each nutrient's composition derived from Czamanski et al. 2011 (http://dx.doi.org/10.1007/s00227-011-1783-7) which did report SDs. We used these to calculate SD values for observed nutrient compositions. The mean coefficient of variation for each nutrient was as follows: C (0.0175), N(0.0097), and P(0.0528).
+
+# Filter out unnecessary columns.
+Observed_and_Predicted_NutrientContent <- pred_Ratios_NutrientContent[ , c(1:17, 42:53)]
 
 ##### Merging Observed and Derived C #####
 
-# The code below is to combine observed and predicted C content values into one column for use in later models.
-
-Observed_and_Predicted_NutrientContent <- pred_Ratios_NutrientContent_fromStaticModel[ , c(1:17, 42:59)]
+# The code below is to combine observed and predicted C composition values into one column.
 
 Observed_and_Predicted_NutrientContent <- Observed_and_Predicted_NutrientContent %>% 
+  # Selects for observed C value first, if available. Otherwise, it selects for the predicted (derived) C value, if available.
   mutate(combined_WetWeightC = as.numeric(ifelse(!is.na(WetWeight_C), paste(WetWeight_C),
                                                  paste(derived_WetC)))) %>% 
   mutate(combined_WetWeight_C_SD = as.numeric(ifelse(!is.na(WetWeight_C),  WetWeight_C * 0.0175,
@@ -993,20 +997,16 @@ Observed_and_Predicted_NutrientContent <- Observed_and_Predicted_NutrientContent
   mutate(combined_DryWeight_C_SD = as.numeric(ifelse(!is.na(DryWeight_C), DryWeight_C * 0.0175,
                                                      paste(derived_DryC_SD))))
 
-hist(Observed_and_Predicted_NutrientContent$combined_WetWeightC)
-hist(Observed_and_Predicted_NutrientContent$combined_WetWeight_C_SD)
-hist(Observed_and_Predicted_NutrientContent$combined_DryWeightC)
-hist(Observed_and_Predicted_NutrientContent$combined_DryWeight_C_SD)
-
 
 
 
 
 ##### Merging Observed and Derived N #####
 
-# The code below is to combine observed and predicted N content values into one column for use in later models.
+# The code below is to combine observed and predicted N composition values into one column.
 
-Observed_and_Predicted_NutrientContent <- Observed_and_Predicted_NutrientContent %>% 
+Observed_and_Predicted_NutrientContent <- Observed_and_Predicted_NutrientContent %>%
+  # Selects for observed N value first, if available. Otherwise, it selects for the predicted (derived) N value, if available.
   mutate(combined_WetWeightN = as.numeric(ifelse(!is.na(WetWeight_N), paste(WetWeight_N),
                                                  paste(derived_WetN)))) %>% 
   mutate(combined_WetWeight_N_SD = as.numeric(ifelse(!is.na(WetWeight_N),  WetWeight_N * 0.0097,
@@ -1016,11 +1016,6 @@ Observed_and_Predicted_NutrientContent <- Observed_and_Predicted_NutrientContent
   mutate(combined_DryWeight_N_SD = as.numeric(ifelse(!is.na(DryWeight_N), DryWeight_N * 0.0097,
                                                      paste(derived_DryN_SD))))
 
-hist(Observed_and_Predicted_NutrientContent$combined_WetWeightN)
-hist(Observed_and_Predicted_NutrientContent$combined_WetWeight_N_SD)
-hist(Observed_and_Predicted_NutrientContent$combined_DryWeightN)
-hist(Observed_and_Predicted_NutrientContent$combined_DryWeight_N_SD)
-
 
 
 
@@ -1028,9 +1023,10 @@ hist(Observed_and_Predicted_NutrientContent$combined_DryWeight_N_SD)
 
 ##### Merging Observed and Derived P #####
 
-# The code below is to combine observed and predicted P content values into one column for use in later models.
+# The code below is to combine observed and predicted P composition values into one column.
 
 Observed_and_Predicted_NutrientContent <- Observed_and_Predicted_NutrientContent %>% 
+  # Selects for observed P value first, if available. Otherwise, it selects for the predicted (derived) P value, if available.
   mutate(combined_WetWeightP = as.numeric(ifelse(!is.na(WetWeight_Pwhole), paste(WetWeight_Pwhole),
                                                  paste(derived_WetP)))) %>% 
   mutate(combined_WetWeight_P_SD = as.numeric(ifelse(!is.na(WetWeight_Pwhole),  WetWeight_Pwhole * 0.0528,

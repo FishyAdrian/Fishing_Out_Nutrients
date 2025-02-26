@@ -1,4 +1,27 @@
+###############################################################################
+#                                                                             #
+#                           Fishing Out Nutrients                             #
+#   Nutrient Compositions for Higher-Level Groups and Data-Sparse Species     #
+#                                                                             #
+###############################################################################
 
+
+
+
+# We collected a notable amount of data from 2 datasets, Hicks et al. 2019 (https://github.com/mamacneil/GlobalFishNutrients) and Lucas et al. 2016 (https://doi.org/10.6084/m9.figshare.c.3304116.v1), which we do not have permission to reprint the data from. Therefore, we cannot provide the raw data used for some of the analysis detailed below. We do, however, list all of the sources from which we obtained data in Supplementary Data 1. We include all of the code used to generate our model and data for analysis below for transparency and reproducibility.
+
+
+
+#### NECESSARY PACKAGES ####
+
+library(tidyverse)
+library(data.table)
+library(ggplot2)
+library(GGally)
+library(nlme)
+library (MuMIn)
+library(ggpubr)
+library(mvtnorm)
 
 
 
