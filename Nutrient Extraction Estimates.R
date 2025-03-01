@@ -134,12 +134,16 @@ Fisheries_NutrientExtraction$P_extracted_highCI <- quantiles_CIs_P[5, ]
 
 #### ESTIMATING NUTRIENT EXTRACTIONS ####
 
+# For each group of extraction estimates (e.g., by year), we added up the distributions of 100 extraction estimates for all rows that matched the grouping category. For instance, to estimate annual nutrient extractions, we added up the distributions generated for all rows in the SAU database corresponding to a specific year. This process resulted in a single distribution of 100 estimates for each year. From this distribution, we calculated the mean to determine the estimated nutrient extraction. Additionally, the distribution was used to derive standard deviations (SDs) and 95% confidence intervals (CIs). This process was done for each year, time period, spatial region, trophic group, and functional group.
+
+
 ##### PER YEAR #####
 
 # Carbon
+# Creates data frame for holding C distributions per year.
 C_extractions_per_year <- data.frame(year = c(1960:2018))
 
-# For loop to add up carbon extraction estimates and generate a distribution of 100 carbon extraction estimates per year.
+# For loop to add up C extraction distributions per year.
 for (A in 1:nrow(C_extractions_per_year)) {
   
   C_extractions_per_year[A, 2:101] <- colSums(C_extractions[which(C_extractions_per_year$year[A] == Fisheries_NutrientExtraction$year)])
@@ -164,9 +168,10 @@ NutrientExtraction_perYear$C_extracted_highCI <- quantiles_CIs_C[5, ]
 
 
 # Nitrogen
+# Creates data frame for holding N distributions per year.
 N_extractions_per_year <- data.frame(year = c(1960:2018))
 
-# For loop to add up nitrogen extraction estimates and generate a distribution of 100 nitrogen extraction estimates per year.
+# For loop to add up N extraction distributions per year.
 for (A in 1:nrow(N_extractions_per_year)) {
   
   N_extractions_per_year[A, 2:101] <- colSums(N_extractions[which(N_extractions_per_year$year[A] == Fisheries_NutrientExtraction$year)])
@@ -187,22 +192,103 @@ NutrientExtraction_perYear$N_extracted_highCI <- quantiles_CIs_N[5, ]
 
 
 # Phosphorus
+# Creates data frame for holding P distributions per year.
 P_extractions_per_year <- data.frame(year = c(1960:2018))
 
-# For loop to add up phosphorus extraction estimates and generate a distribution of 100 phosphorus extraction estimates per year.
-for (A in 1:nrow(P_out_per_year)) {
+# For loop to add up P extraction distributions per year.
+for (A in 1:nrow(P_extractions_per_year)) {
   
-  P_out_per_year[A, 2:101] <- colSums(P_extractions[which(P_out_per_year$year[A] == Fisheries_NutrientExtraction$year)])
+  P_extractions_per_year[A, 2:101] <- colSums(P_extractions[which(P_extractions_per_year$year[A] == Fisheries_NutrientExtraction$year)])
   
 }
 
 
 # The following code generates the mean nutrient extraction for each nutrient for each year between 1960 and 2018. It also generates corresponding SDs, the upper and lower bounds of the IQR, and the upper and lower bounds of the 95% confidence intervals.
-NutrientExtraction_perYear$P_extracted <- apply(P_out_per_year[ , 2:101], 1, FUN = mean)
-NutrientExtraction_perYear$P_extracted_SD <- apply(P_out_per_year[ , 2:101], 1, FUN = sd)
-quantiles_CIs_P <- apply(P_out_per_year[ , 2:101], 1, FUN = quantile, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
+NutrientExtraction_perYear$P_extracted <- apply(P_extractions_per_year[ , 2:101], 1, FUN = mean)
+NutrientExtraction_perYear$P_extracted_SD <- apply(P_extractions_per_year[ , 2:101], 1, FUN = sd)
+quantiles_CIs_P <- apply(P_extractions_per_year[ , 2:101], 1, FUN = quantile, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
 NutrientExtraction_perYear$P_extracted_lowCI <- quantiles_CIs_P[1, ]
 NutrientExtraction_perYear$P_extracted_lowIQR <- quantiles_CIs_P[2, ]
 NutrientExtraction_perYear$P_extracted_median <- quantiles_CIs_P[3, ]
 NutrientExtraction_perYear$P_extracted_highIQR <- quantiles_CIs_P[4, ]
 NutrientExtraction_perYear$P_extracted_highCI <- quantiles_CIs_P[5, ]
+
+
+
+##### PER TIME PERIOD #####
+
+###### Carbon ######
+
+# Creates data frame to hold time period distributions.
+C_extractions_per_timeperiod <- data.frame(time_period = c("1960_64", "1993_97", "2014_18"))
+
+# Creates data frame to hold time period extraction estimates
+NutrientExtraction_perTimePeriod <- data.frame(time_period = c("1960_64", "1993_97", "2014_18"))
+NutrientExtraction_perTimePeriod$C_extracted <- NA
+NutrientExtraction_perTimePeriod$C_extracted_SD <- NA
+NutrientExtraction_perTimePeriod$C_extracted_lowCI <- NA
+NutrientExtraction_perTimePeriod$C_extracted_lowIQR <- NA
+NutrientExtraction_perTimePeriod$C_extracted_median <- NA
+NutrientExtraction_perTimePeriod$C_extracted_highIQR <- NA
+NutrientExtraction_perTimePeriod$C_extracted_highCI <- NA
+
+
+
+# 1960-1964 Period #
+
+# For loop to add up C extraction distributions for 1960-1964.
+for (A in 1:nrow(C_extractions_per_timeperiod)) {
+  
+  C_extractions_per_timeperiod[1, 2:101] <- colSums(C_extractions[which(Fisheries_NutrientExtraction$year %in% c(1960:1964))])
+  
+}
+
+NutrientExtraction_perTimePeriod[1, ]$C_extracted <- apply(C_extractions_per_timeperiod[1 , 2:101], 1, FUN = mean)
+NutrientExtraction_perTimePeriod[1, ]$C_extracted_SD <- apply(C_extractions_per_timeperiod[1 , 2:101], 1, FUN = sd)
+quantiles_CIs_C <- apply(C_extractions_per_timeperiod[1 , 2:101], 1, FUN = quantile, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
+NutrientExtraction_perTimePeriod[1, ]$C_extracted_lowCI <- quantiles_CIs_C[1, ]
+NutrientExtraction_perTimePeriod[1, ]$C_extracted_lowIQR <- quantiles_CIs_C[2, ]
+NutrientExtraction_perTimePeriod[1, ]$C_extracted_median <- quantiles_CIs_C[3, ]
+NutrientExtraction_perTimePeriod[1, ]$C_extracted_highIQR <- quantiles_CIs_C[4, ]
+NutrientExtraction_perTimePeriod[1, ]$C_extracted_highCI <- quantiles_CIs_C[5, ]
+
+
+
+# 1993-1997 Period #
+
+# For loop to add up C extraction distributions for 1993-1997.
+for (A in 1:nrow(C_extractions_per_timeperiod)) {
+  
+  C_extractions_per_timeperiod[2, 2:101] <- colSums(C_extractions[which(Fisheries_NutrientExtraction$year %in% c(1993:1997))])
+  
+}
+
+NutrientExtraction_perTimePeriod[2, ]$C_extracted <- apply(C_extractions_per_timeperiod[2 , 2:101], 1, FUN = mean)
+NutrientExtraction_perTimePeriod[2, ]$C_extracted_SD <- apply(C_extractions_per_timeperiod[2 , 2:101], 1, FUN = sd)
+quantiles_CIs_C <- apply(C_extractions_per_timeperiod[2 , 2:101], 1, FUN = quantile, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
+NutrientExtraction_perTimePeriod[2, ]$C_extracted_lowCI <- quantiles_CIs_C[1, ]
+NutrientExtraction_perTimePeriod[2, ]$C_extracted_lowIQR <- quantiles_CIs_C[2, ]
+NutrientExtraction_perTimePeriod[2, ]$C_extracted_median <- quantiles_CIs_C[3, ]
+NutrientExtraction_perTimePeriod[2, ]$C_extracted_highIQR <- quantiles_CIs_C[4, ]
+NutrientExtraction_perTimePeriod[2, ]$C_extracted_highCI <- quantiles_CIs_C[5, ]
+
+
+
+# 2014-2018 Period #
+
+# For loop to add up C extraction distributions for 2014-2018.
+for (A in 1:nrow(C_extractions_per_timeperiod)) {
+  
+  C_extractions_per_timeperiod[3, 2:101] <- colSums(C_extractions[which(Fisheries_NutrientExtraction$year %in% c(2014:2018))])
+  
+}
+
+NutrientExtraction_perTimePeriod[3, ]$C_extracted <- apply(C_extractions_per_timeperiod[3 , 2:101], 1, FUN = mean)
+NutrientExtraction_perTimePeriod[3, ]$C_extracted_SD <- apply(C_extractions_per_timeperiod[3 , 2:101], 1, FUN = sd)
+quantiles_CIs_C <- apply(C_extractions_per_timeperiod[3 , 2:101], 1, FUN = quantile, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
+NutrientExtraction_perTimePeriod[3, ]$C_extracted_lowCI <- quantiles_CIs_C[1, ]
+NutrientExtraction_perTimePeriod[3, ]$C_extracted_lowIQR <- quantiles_CIs_C[2, ]
+NutrientExtraction_perTimePeriod[3, ]$C_extracted_median <- quantiles_CIs_C[3, ]
+NutrientExtraction_perTimePeriod[3, ]$C_extracted_highIQR <- quantiles_CIs_C[4, ]
+NutrientExtraction_perTimePeriod[3, ]$C_extracted_highCI <- quantiles_CIs_C[5, ]
+
