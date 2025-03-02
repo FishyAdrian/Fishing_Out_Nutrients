@@ -137,6 +137,38 @@ Fisheries_NutrientExtraction$P_extracted_highCI <- quantiles_CIs_P[5, ]
 # For each group of extraction estimates (e.g., by year), we added up the distributions of 100 extraction estimates for all rows that matched the grouping category. For instance, to estimate annual nutrient extractions, we added up the distributions generated for all rows in the SAU database corresponding to a specific year. This process resulted in a single distribution of 100 estimates for each year. From this distribution, we calculated the mean to determine the estimated nutrient extraction. Additionally, the distribution was used to derive standard deviations (SDs) and 95% confidence intervals (CIs). This process was done for each year, time period, spatial region, trophic group, and functional group.
 
 
+##### TOTAL NUTRIENT EXTRACTION #####
+
+# Total
+C_extractions_total <- colSums(C_extractions[which(Fisheries_NutrientExtraction$year %in% c(1960:2018))])
+N_extractions_total <- colSums(N_extractions[which(Fisheries_NutrientExtraction$year %in% c(1960:2018))])
+P_extractions_total <- colSums(P_extractions[which(Fisheries_NutrientExtraction$year %in% c(1960:2018))])
+# Carbon = 431,158,275 tonnes
+# Nitrogen = 110,292,936 tonnes
+# Phosphorus = 22,817,918 tonnes
+
+
+# SDs
+sd(C_extractions_total) # +/- 1,126,340
+sd(N_extractions_total) # +/- 189,477.2
+sd(P_extractions_total) # +/- 153,114.3
+
+
+# 95% CIs
+quantile(C_extractions_total, probs = c(0.025, 0.975)) # 428,865,830 - 433,477,727
+quantile(N_extractions_total, probs = c(0.025, 0.975)) # 109,957,232 - 110,711,453
+quantile(P_extractions_total, probs = c(0.025, 0.975)) # 22,513,904 - 23,110,214
+
+
+# IQR
+quantile(C_extractions_total, probs = c(0.25, 0.5, 0.75)) # 430,565,209; 431,271,544; 431,838,797
+quantile(N_extractions_total, probs = c(0.25, 0.5, 0.75)) # 110,172,814; 110,286,014; 110,427,420 
+quantile(P_extractions_total, probs = c(0.25, 0.5, 0.75)) # 22,715,600; 22,820,242; 22,913,843
+
+
+
+
+
 ##### PER YEAR #####
 
 # Carbon
@@ -748,6 +780,74 @@ NutrientExtraction_perArea$P_extracted_highIQR_2014_18 <- quantiles_CIs_P[4, ]
 NutrientExtraction_perArea$P_extracted_highCI_2014_18 <- quantiles_CIs_P[5, ]
 
 
+
+###### Per Square Kilometer ######
+
+# This piece is to calculate the total extractions per marine region on a per-square-kilometer basis. The estimates were done for the entire study period (1960-2018) and per time period (1960s, 1990s, 2010s).
+
+
+# Carbon
+NutrientExtraction_perArea <- NutrientExtraction_perArea %>% 
+  mutate(C_extracted_perSqKm = C_extracted/area_km2,
+         C_extracted_perSqKm_SD = C_extracted_SD/area_km2,
+         C_extracted_perSqKm_1960_64 = C_extracted_1960_64/area_km2,
+         C_extracted_1960_64_perSqKm_SD = C_extracted_SD_1960_64/area_km2,
+         C_extracted_perSqKm_1993_97 = C_extracted_1993_97/area_km2,
+         C_extracted_1993_97_perSqKm_SD = C_extracted_SD_1993_97/area_km2,
+         C_extracted_perSqKm_2014_18 = C_extracted_2014_18/area_km2,
+         C_extracted_2014_18_perSqKm_SD = C_extracted_SD_2014_18/area_km2)
+
+
+# Nitrogen
+NutrientExtraction_perArea <- NutrientExtraction_perArea %>% 
+  mutate(N_extracted_perSqKm = N_extracted/area_km2,
+         N_extracted_perSqKm_SD = N_extracted_SD/area_km2,
+         N_extracted_perSqKm_1960_64 = N_extracted_1960_64/area_km2,
+         N_extracted_1960_64_perSqKm_SD = N_extracted_SD_1960_64/area_km2,
+         N_extracted_perSqKm_1993_97 = N_extracted_1993_97/area_km2,
+         N_extracted_1993_97_perSqKm_SD = N_extracted_SD_1993_97/area_km2,
+         N_extracted_perSqKm_2014_18 = N_extracted_2014_18/area_km2,
+         N_extracted_2014_18_perSqKm_SD = N_extracted_SD_2014_18/area_km2)
+
+
+# Phosphorus
+NutrientExtraction_perArea <- NutrientExtraction_perArea %>% 
+  mutate(P_extracted_perSqKm = P_extracted/area_km2,
+         P_extracted_perSqKm_SD = P_extracted_SD/area_km2,
+         P_extracted_perSqKm_1960_64 = P_extracted_1960_64/area_km2,
+         P_extracted_1960_64_perSqKm_SD = P_extracted_SD_1960_64/area_km2,
+         P_extracted_perSqKm_1993_97 = P_extracted_1993_97/area_km2,
+         P_extracted_1993_97_perSqKm_SD = P_extracted_SD_1993_97/area_km2,
+         P_extracted_perSqKm_2014_18 = P_extracted_2014_18/area_km2,
+         P_extracted_2014_18_perSqKm_SD = P_extracted_SD_2014_18/area_km2)
+
+
+
+
+
+###### Percent Change Between Periods ######
+
+# This piece is to calculate the percent change in nutrient extractions between periods for each marine region.
+
+NutrientExtraction_perArea <- NutrientExtraction_perArea %>% 
+  mutate(C_extracted_perSqKm_60s_90s = 
+           ((C_extracted_perSqKm_1993_97 - C_extracted_perSqKm_1960_64)/
+              C_extracted_perSqKm_1960_64) *100,
+         C_extracted_perSqKm_90s_10s = 
+           ((C_extracted_perSqKm_2014_18 - C_extracted_perSqKm_1993_97)/
+              C_extracted_perSqKm_1993_97) *100,
+         N_extracted_perSqKm_60s_90s = 
+           ((N_extracted_perSqKm_1993_97 - N_extracted_perSqKm_1960_64)/
+              N_extracted_perSqKm_1960_64) *100,
+         N_extracted_perSqKm_90s_10s = 
+           ((N_extracted_perSqKm_2014_18 - N_extracted_perSqKm_1993_97)/
+              N_extracted_perSqKm_1993_97) *100,
+         P_extracted_perSqKm_60s_90s = 
+           ((P_extracted_perSqKm_1993_97 - P_extracted_perSqKm_1960_64)/
+              P_extracted_perSqKm_1960_64) *100,
+         P_extracted_perSqKm_90s_10s = 
+           ((P_extracted_perSqKm_2014_18 - P_extracted_perSqKm_1993_97)/
+              P_extracted_perSqKm_1993_97) *100)
 
 
 
