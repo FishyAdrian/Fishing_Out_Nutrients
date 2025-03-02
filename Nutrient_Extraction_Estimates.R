@@ -73,7 +73,7 @@ C_extractions <- SAU_catch.data$tonnes * C_distributions
 N_extractions <- SAU_catch.data$tonnes * N_distributions
 P_extractions <- SAU_catch.data$tonnes * P_distributions
 
-# These extraction distribution matrices have been saved as CSVs which can be found in the following Figshare repository: 10.6084/m9.figshare.28500593.
+# These extraction distribution matrices have been saved as CSVs which can be found in the following Figshare repository: https://doi.org/10.6084/m9.figshare.28500593.
 
 
 # Finally, we took C_extracted to be the mean of the 100 extraction estimates produced above. We also obtained the SD, IQR, and 95% CIs. The 'Fisheries_NutrientExtraction' represents our finalized data frame which had all the estimates of C, N, and P extraction per row of the fisheries record (n=)

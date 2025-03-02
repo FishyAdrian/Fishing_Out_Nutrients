@@ -63,8 +63,8 @@ C.N_perYear$C.N_highCI <- NA
 for (A in c(1960:2018)) {
   
   # Transposes the distribution matrices of C and P per year
-  C_output <- t(C_out_per_year %>% filter(year == A) %>% select(-1))
-  N_output <- t(N_out_per_year %>% filter(year == A) %>% select(-1))
+  C_output <- t(C_extractions_per_year %>% filter(year == A) %>% select(-1))
+  N_output <- t(N_extractions_per_year %>% filter(year == A) %>% select(-1))
   
   # Combines the two transposed C and P distribution matrices per year
   output <- as.data.frame(cbind(C_output, N_output))
@@ -107,8 +107,8 @@ C.P_perYear$C.P_highCI <- NA
 for (A in c(1960:2018)) {
   
   # Transposes the distribution matrices of C and P per year.
-  C_output <- t(C_out_per_year %>% filter(year == A) %>% select(-1))
-  P_output <- t(P_out_per_year %>% filter(year == A) %>% select(-1))
+  C_output <- t(C_extractions_per_year %>% filter(year == A) %>% select(-1))
+  P_output <- t(P_extractions_per_year %>% filter(year == A) %>% select(-1))
   
   # Combines the two transposed C and P distribution matrices per year.
   output <- as.data.frame(cbind(C_output, P_output))
@@ -151,8 +151,8 @@ N.P_perYear$N.P_highCI <- NA
 for (A in c(1960:2018)) {
   
   # Transposes the distribution matrices of N and P per year.
-  N_output <- t(N_out_per_year %>% filter(year == A) %>% select(-1))
-  P_output <- t(P_out_per_year %>% filter(year == A) %>% select(-1))
+  N_output <- t(N_extractions_per_year %>% filter(year == A) %>% select(-1))
+  P_output <- t(P_extractions_per_year %>% filter(year == A) %>% select(-1))
   
   # Combines the two transposed N and P distribution matrices per year.
   output <- as.data.frame(cbind(N_output, P_output))
@@ -187,44 +187,44 @@ NutrientRatios_perYear <- cbind(C.N_perYear, C.P_perYear, N.P_perYear)[ , -c(6,1
 # Carbon #
 
 # Generates data frames to get C extraction distributions per time periods.
-C_out_per_area <- data.frame(area_name = unique(Fisheries_NutrientExtraction$area_name))
-C_out_per_area_1960s <- C_out_per_area
-C_out_per_area_1990s <- C_out_per_area
-C_out_per_area_2010s <- C_out_per_area
+C_extractions_per_area <- data.frame(area_name = unique(Fisheries_NutrientExtraction$area_name))
+C_extractions_per_area_1960s <- C_extractions_per_area
+C_extractions_per_area_1990s <- C_extractions_per_area
+C_extractions_per_area_2010s <- C_extractions_per_area
 
 
 # C - All Years
 
-for (A in 1:nrow(C_out_per_area)) {
+for (A in 1:nrow(C_extractions_per_area)) {
   
-  C_out_per_area[A, 2:101] <- colSums(C_out[which(C_out_per_area$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  C_extractions_per_area[A, 2:101] <- colSums(C_extractions[which(C_extractions_per_area$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                     Fisheries_NutrientExtraction$year %in% c(1960:2018))])
   
 }
 
 # C - 1960s
 
-for (A in 1:nrow(C_out_per_area_1960s)) {
+for (A in 1:nrow(C_extractions_per_area_1960s)) {
   
-  C_out_per_area_1960s[A, 2:101] <- colSums(C_out[which(C_out_per_area_1960s$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  C_extractions_per_area_1960s[A, 2:101] <- colSums(C_extractions[which(C_extractions_per_area_1960s$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                           Fisheries_NutrientExtraction$year %in% c(1960:1964))])
   
 }
 
 # C - 1990s
 
-for (A in 1:nrow(C_out_per_area_1990s)) {
+for (A in 1:nrow(C_extractions_per_area_1990s)) {
   
-  C_out_per_area_1990s[A, 2:101] <- colSums(C_out[which(C_out_per_area_1990s$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  C_extractions_per_area_1990s[A, 2:101] <- colSums(C_extractions[which(C_extractions_per_area_1990s$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                           Fisheries_NutrientExtraction$year %in% c(1993:1997))])
   
 }
 
 # C - 2010s
 
-for (A in 1:nrow(C_out_per_area_2010s)) {
+for (A in 1:nrow(C_extractions_per_area_2010s)) {
   
-  C_out_per_area_2010s[A, 2:101] <- colSums(C_out[which(C_out_per_area_2010s$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  C_extractions_per_area_2010s[A, 2:101] <- colSums(C_extractions[which(C_extractions_per_area_2010s$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                           Fisheries_NutrientExtraction$year %in% c(2014:2018))])
   
 }
@@ -235,44 +235,44 @@ for (A in 1:nrow(C_out_per_area_2010s)) {
 
 # Re-generates data frames to get C extraction distributions per time periods.
 
-N_out_per_area <- data.frame(area_name = unique(Fisheries_NutrientExtraction$area_name))
-N_out_per_area_1960s <- N_out_per_area
-N_out_per_area_1990s <- N_out_per_area
-N_out_per_area_2010s <- N_out_per_area
+N_extractions_per_area <- data.frame(area_name = unique(Fisheries_NutrientExtraction$area_name))
+N_extractions_per_area_1960s <- N_extractions_per_area
+N_extractions_per_area_1990s <- N_extractions_per_area
+N_extractions_per_area_2010s <- N_extractions_per_area
 
 
 # N - All Years
 
-for (A in 1:nrow(N_out_per_area)) {
+for (A in 1:nrow(N_extractions_per_area)) {
   
-  N_out_per_area[A, 2:101] <- colSums(N_out[which(N_out_per_area$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  N_extractions_per_area[A, 2:101] <- colSums(N_extractions[which(N_extractions_per_area$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                     Fisheries_NutrientExtraction$year %in% c(1960:2018))])
   
 }
 
 # N - 1960s
 
-for (A in 1:nrow(N_out_per_area_1960s)) {
+for (A in 1:nrow(N_extractions_per_area_1960s)) {
   
-  N_out_per_area_1960s[A, 2:101] <- colSums(N_out[which(N_out_per_area_1960s$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  N_extractions_per_area_1960s[A, 2:101] <- colSums(N_extractions[which(N_extractions_per_area_1960s$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                           Fisheries_NutrientExtraction$year %in% c(1960:1964))])
   
 }
 
 # N - 1990s
 
-for (A in 1:nrow(N_out_per_area_1990s)) {
+for (A in 1:nrow(N_extractions_per_area_1990s)) {
   
-  N_out_per_area_1990s[A, 2:101] <- colSums(N_out[which(N_out_per_area_1990s$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  N_extractions_per_area_1990s[A, 2:101] <- colSums(N_extractions[which(N_extractions_per_area_1990s$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                           Fisheries_NutrientExtraction$year %in% c(1993:1997))])
   
 }
 
 # N - 2010s
 
-for (A in 1:nrow(N_out_per_area_2010s)) {
+for (A in 1:nrow(N_extractions_per_area_2010s)) {
   
-  N_out_per_area_2010s[A, 2:101] <- colSums(N_out[which(N_out_per_area_2010s$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  N_extractions_per_area_2010s[A, 2:101] <- colSums(N_extractions[which(N_extractions_per_area_2010s$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                           Fisheries_NutrientExtraction$year %in% c(2014:2018))])
   
 }
@@ -282,44 +282,44 @@ for (A in 1:nrow(N_out_per_area_2010s)) {
 # Phosphorus #
 
 # Re-generates data frames to get N extraction distributions per time periods.# Phosphorus stochastic estimates per area
-P_out_per_area <- data.frame(area_name = unique(Fisheries_NutrientExtraction$area_name))
-P_out_per_area_1960s <- P_out_per_area
-P_out_per_area_1990s <- P_out_per_area
-P_out_per_area_2010s <- P_out_per_area
+P_extractions_per_area <- data.frame(area_name = unique(Fisheries_NutrientExtraction$area_name))
+P_extractions_per_area_1960s <- P_extractions_per_area
+P_extractions_per_area_1990s <- P_extractions_per_area
+P_extractions_per_area_2010s <- P_extractions_per_area
 
 
 # P - All Years
 
-for (A in 1:nrow(P_out_per_area)) {
+for (A in 1:nrow(P_extractions_per_area)) {
   
-  P_out_per_area[A, 2:101] <- colSums(P_out[which(P_out_per_area$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  P_extractions_per_area[A, 2:101] <- colSums(P_extractions[which(P_extractions_per_area$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                     Fisheries_NutrientExtraction$year %in% c(1960:2018))])
   
 }
 
 # P - 1960s
 
-for (A in 1:nrow(P_out_per_area_1960s)) {
+for (A in 1:nrow(P_extractions_per_area_1960s)) {
   
-  P_out_per_area_1960s[A, 2:101] <- colSums(P_out[which(P_out_per_area_1960s$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  P_extractions_per_area_1960s[A, 2:101] <- colSums(P_extractions[which(P_extractions_per_area_1960s$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                           Fisheries_NutrientExtraction$year %in% c(1960:1964))])
   
 }
 
 # P - 1990s
 
-for (A in 1:nrow(P_out_per_area_1990s)) {
+for (A in 1:nrow(P_extractions_per_area_1990s)) {
   
-  P_out_per_area_1990s[A, 2:101] <- colSums(P_out[which(P_out_per_area_1990s$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  P_extractions_per_area_1990s[A, 2:101] <- colSums(P_extractions[which(P_extractions_per_area_1990s$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                           Fisheries_NutrientExtraction$year %in% c(1993:1997))])
   
 }
 
 # P - 2010s
 
-for (A in 1:nrow(P_out_per_area_2010s)) {
+for (A in 1:nrow(P_extractions_per_area_2010s)) {
   
-  P_out_per_area_2010s[A, 2:101] <- colSums(P_out[which(P_out_per_area_2010s$area_name[A] == Fisheries_NutrientExtraction$area_name &
+  P_extractions_per_area_2010s[A, 2:101] <- colSums(P_extractions[which(P_extractions_per_area_2010s$area_name[A] == Fisheries_NutrientExtraction$area_name &
                                                           Fisheries_NutrientExtraction$year %in% c(2014:2018))])
   
 }
@@ -345,9 +345,9 @@ NutrientRatios_perArea$C.N_highCI <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of C and N per marine region.
-  C_output <- t(C_out_per_area %>% filter(area_name == A) %>% select(-1))
+  C_output <- t(C_extractions_per_area %>% filter(area_name == A) %>% select(-1))
   
-  N_output <- t(N_out_per_area %>% filter(area_name == A) %>% select(-1))
+  N_output <- t(N_extractions_per_area %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed C and N distribution matrices per marine region.
   output <- as.data.frame(cbind(C_output, N_output))
@@ -383,8 +383,8 @@ NutrientRatios_perArea$C.N_highCI_1960_64 <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of C and N per marine region.
-  C_output <- t(C_out_per_area_1960s %>% filter(area_name == A) %>% select(-1))
-  N_output <- t(N_out_per_area_1960s %>% filter(area_name == A) %>% select(-1))
+  C_output <- t(C_extractions_per_area_1960s %>% filter(area_name == A) %>% select(-1))
+  N_output <- t(N_extractions_per_area_1960s %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed C and N distribution matrices per marine region.
   output <- as.data.frame(cbind(C_output, N_output))
@@ -420,8 +420,8 @@ NutrientRatios_perArea$C.N_highCI_1993_97 <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of C and N per marine region.
-  C_output <- t(C_out_per_area_1990s %>% filter(area_name == A) %>% select(-1))
-  N_output <- t(N_out_per_area_1990s %>% filter(area_name == A) %>% select(-1))
+  C_output <- t(C_extractions_per_area_1990s %>% filter(area_name == A) %>% select(-1))
+  N_output <- t(N_extractions_per_area_1990s %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed C and N distribution matrices per marine region.
   output <- as.data.frame(cbind(C_output, N_output))
@@ -457,8 +457,8 @@ NutrientRatios_perArea$C.N_highCI_2014_18 <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of C and N per marine region.
-  C_output <- t(C_out_per_area_2010s %>% filter(area_name == A) %>% select(-1))
-  N_output <- t(N_out_per_area_2010s %>% filter(area_name == A) %>% select(-1))
+  C_output <- t(C_extractions_per_area_2010s %>% filter(area_name == A) %>% select(-1))
+  N_output <- t(N_extractions_per_area_2010s %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed C and N distribution matrices per marine region.
   output <- as.data.frame(cbind(C_output, N_output))
@@ -498,8 +498,8 @@ NutrientRatios_perArea$C.P_highCI <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of C and P per marine region.
-  C_output <- t(C_out_per_area %>% filter(area_name == A) %>% select(-1))
-  P_output <- t(P_out_per_area %>% filter(area_name == A) %>% select(-1))
+  C_output <- t(C_extractions_per_area %>% filter(area_name == A) %>% select(-1))
+  P_output <- t(P_extractions_per_area %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed C and P distribution matrices per marine region.
   output <- as.data.frame(cbind(C_output, P_output))
@@ -535,8 +535,8 @@ NutrientRatios_perArea$C.P_highCI_1960_64 <- NA
 
 for (A in unique(NutrientRatios_perArea$area_name)) {
   # Transposes the distribution matrices of C and P per marine region.
-  C_output <- t(C_out_per_area_1960s %>% filter(area_name == A) %>% select(-1))
-  P_output <- t(P_out_per_area_1960s %>% filter(area_name == A) %>% select(-1))
+  C_output <- t(C_extractions_per_area_1960s %>% filter(area_name == A) %>% select(-1))
+  P_output <- t(P_extractions_per_area_1960s %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed C and P distribution matrices per marine region.
   output <- as.data.frame(cbind(C_output, P_output))
@@ -572,8 +572,8 @@ NutrientRatios_perArea$C.P_highCI_1993_97 <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of C and P per marine region.
-  C_output <- t(C_out_per_area_1990s %>% filter(area_name == A) %>% select(-1))
-  P_output <- t(P_out_per_area_1990s %>% filter(area_name == A) %>% select(-1))
+  C_output <- t(C_extractions_per_area_1990s %>% filter(area_name == A) %>% select(-1))
+  P_output <- t(P_extractions_per_area_1990s %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed C and P distribution matrices per marine region.
   output <- as.data.frame(cbind(C_output, P_output))
@@ -609,8 +609,8 @@ NutrientRatios_perArea$C.P_highCI_2014_18 <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of C and P per marine region.
-  C_output <- t(C_out_per_area_2010s %>% filter(area_name == A) %>% select(-1))
-  P_output <- t(P_out_per_area_2010s %>% filter(area_name == A) %>% select(-1))
+  C_output <- t(C_extractions_per_area_2010s %>% filter(area_name == A) %>% select(-1))
+  P_output <- t(P_extractions_per_area_2010s %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed C and P distribution matrices per marine region.
   output <- as.data.frame(cbind(C_output, P_output))
@@ -650,8 +650,8 @@ NutrientRatios_perArea$N.P_highCI <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of N and P per marine region.
-  N_output <- t(N_out_per_area %>% filter(area_name == A) %>% select(-1))
-  P_output <- t(P_out_per_area %>% filter(area_name == A) %>% select(-1))
+  N_output <- t(N_extractions_per_area %>% filter(area_name == A) %>% select(-1))
+  P_output <- t(P_extractions_per_area %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed N and P distribution matrices per marine region.
   output <- as.data.frame(cbind(N_output, P_output))
@@ -687,8 +687,8 @@ NutrientRatios_perArea$N.P_highCI_1960_64 <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of N and P per marine region.
-  N_output <- t(N_out_per_area_1960s %>% filter(area_name == A) %>% select(-1))
-  P_output <- t(P_out_per_area_1960s %>% filter(area_name == A) %>% select(-1))
+  N_output <- t(N_extractions_per_area_1960s %>% filter(area_name == A) %>% select(-1))
+  P_output <- t(P_extractions_per_area_1960s %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed N and P distribution matrices per marine region.
   output <- as.data.frame(cbind(N_output, P_output))
@@ -724,8 +724,8 @@ NutrientRatios_perArea$N.P_highCI_1993_97 <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of N and P per marine region.
-  N_output <- t(N_out_per_area_1990s %>% filter(area_name == A) %>% select(-1))
-  P_output <- t(P_out_per_area_1990s %>% filter(area_name == A) %>% select(-1))
+  N_output <- t(N_extractions_per_area_1990s %>% filter(area_name == A) %>% select(-1))
+  P_output <- t(P_extractions_per_area_1990s %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed N and P distribution matrices per marine region.
   output <- as.data.frame(cbind(N_output, P_output))
@@ -760,8 +760,8 @@ NutrientRatios_perArea$N.P_highCI_2014_18 <- NA
 for (A in unique(NutrientRatios_perArea$area_name)) {
   
   # Transposes the distribution matrices of N and P per marine region.
-  N_output <- t(N_out_per_area_2010s %>% filter(area_name == A) %>% select(-1))
-  P_output <- t(P_out_per_area_2010s %>% filter(area_name == A) %>% select(-1))
+  N_output <- t(N_extractions_per_area_2010s %>% filter(area_name == A) %>% select(-1))
+  P_output <- t(P_extractions_per_area_2010s %>% filter(area_name == A) %>% select(-1))
   
   # Combines the two transposed N and P distribution matrices per marine region.
   output <- as.data.frame(cbind(N_output, P_output))
