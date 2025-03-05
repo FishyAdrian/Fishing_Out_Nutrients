@@ -384,25 +384,32 @@ PE_perTG_plot <- NE_perTG_forPlot %>% filter(years != "All Years" & nutrient == 
 
 ##### Comparison Plot #####
 
-test1 <- as.data.table(GloAv_NutrientExtraction_perTG %>% select(c(1, seq(102, 190, by = 8))) %>% pivot_longer(!trophic_group, names_to = "years", values_to = "per_change"))
-test2 <- as.data.table(GloAv_NutrientExtraction_perTG %>% select(c(1, seq(103, 191, by = 8))) %>% pivot_longer(!trophic_group, names_to = "years", values_to = "per_change_SD"))
+# Transforms the GloAv_NutrientExtraction_perTG data frame from wide to long formats. The first data frame contains the estimates and the second contains the standard deviations.
+GloAv_NutrientExtraction_perTG_long1 <- as.data.table(GloAv_NutrientExtraction_perTG %>% select(c(1, seq(102, 190, by = 8))) %>% pivot_longer(!trophic_group, names_to = "years", values_to = "per_change"))
+GloAv_NutrientExtraction_perTG_long2 <- as.data.table(GloAv_NutrientExtraction_perTG %>% select(c(1, seq(103, 191, by = 8))) %>% pivot_longer(!trophic_group, names_to = "years", values_to = "per_change_SD"))
 
-GloAv_NE_perTG_forPlot <- cbind(test1, test2)
+
+# Merges the two long data frames to create the data frame needed for the plot.
+GloAv_NE_perTG_forPlot <- cbind(GloAv_NutrientExtraction_perTG_long1, GloAv_NutrientExtraction_perTG_long2)
 GloAv_NE_perTG_forPlot <- GloAv_NE_perTG_forPlot %>% select(-c(4:5))
 
 
+# Creates the column to designate the nutrient in each row.
 GloAv_NE_perTG_forPlot$nutrient <- "NA"
 GloAv_NE_perTG_forPlot[years %in% c("C_dif_per", "C_dif_1960_64_per", "C_dif_1993_97_per", "C_dif_2014_18_per")]$nutrient <- "Carbon"
 GloAv_NE_perTG_forPlot[years %in% c("N_dif_per", "N_dif_1960_64_per", "N_dif_1993_97_per", "N_dif_2014_18_per")]$nutrient <- "Nitrogen"
 GloAv_NE_perTG_forPlot[years %in% c("P_dif_per", "P_dif_1960_64_per", "P_dif_1993_97_per", "P_dif_2014_18_per")]$nutrient <- "Phosphorus"
 
+
+# Changes the values to correspond to the correct time periods.
 GloAv_NE_perTG_forPlot[years %in% c("C_dif_per", "N_dif_per", "P_dif_per")]$years <- "All Years"
 GloAv_NE_perTG_forPlot[years %in% c("C_dif_1960_64_per", "N_dif_1960_64_per", "P_dif_1960_64_per")]$years <- "1960-64"
 GloAv_NE_perTG_forPlot[years %in% c("C_dif_1993_97_per", "N_dif_1993_97_per", "P_dif_1993_97_per")]$years <- "1993-97"
 GloAv_NE_perTG_forPlot[years %in% c("C_dif_2014_18_per", "N_dif_2014_18_per", "P_dif_2014_18_per")]$years <- "2014-18"
 
 
-## Panel f
+
+## Panel f - Percent differences between our estimates and those from uniform values
 perTG_per_dif_plot <- GloAv_NE_perTG_forPlot %>% filter(years == "All Years") %>% 
   ggplot(aes(x = trophic_group, y=per_change, 
              fill=factor(nutrient, levels= c("Carbon", "Nitrogen", "Phosphorus")))) +
@@ -450,139 +457,165 @@ dev.off()
 
 #### FIGURE 6 ####
 
-# Maps for Figure 6 were made in ArcGIS Pro 3.1.2. The code below outlines how the proportions were calculated. Once calculated, the data frames below were exported as CSVs and imported into ArcGIS Pro to create the panels.
+# Maps for Figure 6 were made in ArcGIS Pro 3.1.2. The code below outlines how the proportions were calculated. Once calculated, the data frames below were exported as CSVs and imported into ArcGIS Pro to create the individual maps.
 
 ##### Trophic Group Proportions #####
 
-# Proportion of Carbon Extraction through Mesopredators per Area, All Years
+## Proportion of carbon extraction through mesopredators (trophic levels >= 2.8 and < 4.0) per marine region.
+
+# Calculates total C extracted through just mesopredators per marine region.
 NutrientExtraction_perArea.mesopredators <- Fisheries_NutrientExtraction %>% 
   filter(trophic_group == "Mesopredators" & year %in% c(1960:2018)) %>% 
   group_by(area_name) %>% 
   summarise(C_extracted_mesopredators = sum(C_extracted))
 
-NutrientExtraction_perArea.TG.prop <- NutrientExtraction_perArea[ , c(1,2)]
+# Creates data frame with total C extractions per marine region
+NutrientExtraction_perArea.TG.prop <- NutrientExtraction_perArea[ , c(1:3)]
+
+# Merges newly created data frame with the mesopredator C extractions data frame from above.
 NutrientExtraction_perArea.TG.prop <- merge(NutrientExtraction_perArea.TG.prop, NutrientExtraction_perArea.mesopredators, 
                                             by = "area_name", 
                                             all.x = TRUE)
+
+# Calculates the proportion of the total C extracted per marine region that was made up of mesopredator extractions for the period 1960-2018.
 NutrientExtraction_perArea.TG.prop <- NutrientExtraction_perArea.TG.prop %>% 
   mutate(CE_meso_prop = C_extracted_mesopredators/C_extracted)
 
 
 
-# Proportion of Carbon Extraction through High-Level Predators (trophic level > 4) per Area, All Years
+
+## Proportion of carbon extraction through high-level predators and top predators (trophic levels >= 4.0) per marine region. Top level predators (>= 5.0) were included along here because they composed a small percentage (<0.1%) of the total catch.
+
+# Calculates total C extracted through just high-level predators and top predators per marine region.
 NutrientExtraction_perArea.highpred <- Fisheries_NutrientExtraction %>% 
   filter((trophic_group == "High-level predators" | trophic_group == "Top predators") & year %in% c(1960:2018)) %>% 
   group_by(area_name) %>% 
   summarise(C_extracted_highpred = sum(C_extracted))
 
+# Merges TG.prop data frame with the high-level predator C extractions data frame.
 NutrientExtraction_perArea.TG.prop <- merge(NutrientExtraction_perArea.TG.prop, NutrientExtraction_perArea.highpred,
                                             by = "area_name",
                                             all.x = TRUE)
 
+# Calculates the proportion of the total C extracted per marine region that was made up of high-level and top predator extractions for the period 1960-2018.
 NutrientExtraction_perArea.TG.prop <- NutrientExtraction_perArea.TG.prop %>% 
   mutate(CE_highpred_prop = C_extracted_highpred/C_extracted)
 
 
 
-# Proportion of Carbon Extraction through Low-level consumers (trophic level = 2-2.8) per Area, All Years
+## Proportion of carbon extraction through low-level consumers (trophic levels >= 2.0 and < 2.8) per marine region.
+
+# Calculates total C extracted through just low-level consumers per marine region.
 NutrientExtraction_perArea.low.level.con <- Fisheries_NutrientExtraction %>% 
   filter(trophic_group == "Low-level consumers" & year %in% c(1960:2018)) %>% 
   group_by(area_name) %>% 
   summarise(C_extracted_low.level.con = sum(C_extracted))
 
+# Merges TG.prop data frame with the high-level predator C extractions data frame.
 NutrientExtraction_perArea.TG.prop <- merge(NutrientExtraction_perArea.TG.prop, NutrientExtraction_perArea.low.level.con, 
                                             by = "area_name",
                                             all.x = TRUE)
+
+# Calculates the proportion of the total C extracted per marine region that was made up of low-level consumer extractions for the period 1960-2018.
 NutrientExtraction_perArea.TG.prop <- NutrientExtraction_perArea.TG.prop %>% 
   mutate(CE_low.level_prop = C_extracted_low.level.con/C_extracted)
 
 
 
-# Verify if proportions add up
 
-NutrientExtraction_perArea.TG.prop %>% mutate(Total_prop = CE_meso_prop + CE_highpred_prop + CE_low.level_prop) %>% filter(Total_prop > 1)
 
 
 
 ##### Functional Group Proportions #####
 
-# Proportion of Carbon Extraction through Pelagics per Area, All Years
+## Proportion of carbon extraction through pelagics per marine region.
+
+# Calculates total C extracted through just pelagics per marine region.
 NutrientExtraction_perArea.pelagics <- Fisheries_NutrientExtraction %>% 
   filter(simp_functional_group == "Pelagic" & year %in% c(1960:2018)) %>% 
   group_by(area_name) %>% 
   summarise(C_extracted_pelagic = sum(C_extracted))
 
+# Creates data frame with total C extractions per marine region
 NutrientExtraction_perArea.FG.prop <- NutrientExtraction_perArea[ , c(1,2)]
+
+# Merges FG.prop data frame with the pelagic C extractions data frame.
 NutrientExtraction_perArea.FG.prop <- merge(NutrientExtraction_perArea.FG.prop, NutrientExtraction_perArea.pelagics, 
                                             by = "area_name", 
                                             all.x = TRUE)
+
+# Calculates the proportion of the total C extracted per marine region that was made up of pelagic extractions for the period 1960-2018.
 NutrientExtraction_perArea.FG.prop <- NutrientExtraction_perArea.FG.prop %>% 
   mutate(CE_pel_prop = C_extracted_pelagic/C_extracted)
 
 
 
-# Proportion of Carbon Extraction through Demersals per Area, All Years
+
+## Proportion of carbon extraction through demersals per marine region.
+
+# Calculates total C extracted through just demersals per marine region.
 NutrientExtraction_perArea.demersals <- Fisheries_NutrientExtraction %>% 
   filter(simp_functional_group == "Demersal" & year %in% c(1960:2018)) %>% 
   group_by(area_name) %>% 
   summarise(C_extracted_demersal = sum(C_extracted))
 
+# Merges FG.prop data frame with the demersal C extractions data frame.
 NutrientExtraction_perArea.FG.prop <- merge(NutrientExtraction_perArea.FG.prop, NutrientExtraction_perArea.demersals, 
                                             by = "area_name",
                                             all.x = TRUE)
+
+# Calculates the proportion of the total C extracted per marine region that was made up of demersal extractions for the period 1960-2018.
 NutrientExtraction_perArea.FG.prop <- NutrientExtraction_perArea.FG.prop %>% 
   mutate(CE_dem_prop = C_extracted_demersal/C_extracted)
 
 
 
-# Proportion of Carbon Extraction through Benthopelagics per Area, All Years
+
+## Proportion of carbon extraction through benthopelagics per marine region.
+
+# Calculates total C extracted through just benthopelagics per marine region.
 NutrientExtraction_perArea.benthopelagics <- Fisheries_NutrientExtraction %>% 
   filter(simp_functional_group == "Benthopelagic" & year %in% c(1960:2018)) %>% 
   group_by(area_name) %>% 
   summarise(C_extracted_benthopel = sum(C_extracted))
 
+# Merges FG.prop data frame with the benthopelagic C extractions data frame.
 NutrientExtraction_perArea.FG.prop <- merge(NutrientExtraction_perArea.FG.prop, NutrientExtraction_perArea.benthopelagics, 
                                             by = "area_name",
                                             all.x = TRUE)
+
+# Calculates the proportion of the total C extracted per marine region that was made up of benthopelagic extractions for the period 1960-2018.
 NutrientExtraction_perArea.FG.prop <- NutrientExtraction_perArea.FG.prop %>% 
   mutate(CE_benthopel_prop = C_extracted_benthopel/C_extracted)
 
 
 
-# Proportion of Carbon Extraction through all other functional groups (Shrimps, Jellyfish, Sharks, Cephalopods, Rays, Flatfish, Crabs/Lobsters, Bathydemersal, Reef Fish, Bathypelagic, Krill) per Area, All Years
+
+## Proportion of carbon extraction through all other functional groups (Shrimps, Jellyfish, Sharks, Cephalopods, Rays, Flatfish, Crabs/Lobsters, Bathydemersal, Reef Fish, Bathypelagic, Krill) per marine region.
+
+# Calculates total C extracted through all other functional groups per marine region.
 NutrientExtraction_perArea.miscfun <- Fisheries_NutrientExtraction %>% 
   filter(!(simp_functional_group %in% c("Pelagic", "Demersal", "Benthopelagic")) & year %in% c(1960:2018)) %>% 
   group_by(area_name) %>% 
   summarise(C_extracted_miscfun = sum(C_extracted))
 
+# Merges FG.prop data frame with the C extractions from all other functional groups.
 NutrientExtraction_perArea.FG.prop <- merge(NutrientExtraction_perArea.FG.prop, NutrientExtraction_perArea.miscfun, 
                                             by = "area_name",
                                             all.x = TRUE)
+
+# Calculates the proportion of the total C extracted per marine region that was made up of all other functional groups for the period 1960-2018.
 NutrientExtraction_perArea.FG.prop <- NutrientExtraction_perArea.FG.prop %>% 
   mutate(CE_miscfun_prop = C_extracted_miscfun/C_extracted)
 
 
 
-# Verify if proportions add up
+## Saving the proportion tables
 
-NutrientExtraction_perArea.FG.prop %>% 
-  mutate(Total_prop = CE_pel_prop + CE_dem_prop + CE_benthopel_prop + CE_miscfun_prop) %>% 
-  filter(Total_prop > 1)
-
-
-
-
-
-
-
-# Saving the proportion tables
-
+# Both the TG and FG group prop data frames were exported as CSVs and imported into ArcGIS Pro to make the maps for Figure 6.
 NutrientExtraction_perArea_group.props <- merge(NutrientExtraction_perArea.TG.prop, 
                                                 NutrientExtraction_perArea.FG.prop[ , c(1,3:10)], 
                                                 by = "area_name")
-
-fwrite(NutrientExtraction_perArea_group.props, "G:/My Drive/Utah State/Thesis/Thesis_Manuscripts/C, N, P and Ecology Manuscript/Tables/R Output Tables/NutrientExtraction_perArea_groupprops_ver2.csv")
-fwrite(NutrientExtraction_perArea_group.props, "NutrientExtraction_perArea_groupprops_ver2.csv")
 
 
 
@@ -594,22 +627,25 @@ fwrite(NutrientExtraction_perArea_group.props, "NutrientExtraction_perArea_group
 
 #### FIGURE 7 ####
 
-# The following code is a second attempt which featured a nutrient (and landings) per plot with each time period featured (but not All Years). This also did not feature a secondary y-axis with the percentages.
+# Transforms the NutrientExtraction_perSFG data frame from wide to long formats. The first data frame contains the estimates and the second contains the standard deviations.
+NutrientExtraction_perSFG_long1 <- as.data.table(NutrientExtraction_perSFG %>% select(c(1, seq(2, 79, by = 7))) %>% pivot_longer(!simp_functional_group, names_to = "years", values_to = "metric_tons"))
+NutrientExtraction_perSFG_long2 <- as.data.table(NutrientExtraction_perSFG %>% select (c(1, seq(3, 80, by = 7))) %>% pivot_longer(!simp_functional_group, names_to = "years", values_to = "metric_tons_SD"))
 
-test1 <- as.data.table(NutrientExtraction_perSFG %>% select(c(1, seq(2, 79, by = 7))) %>% pivot_longer(!simp_functional_group, names_to = "years", values_to = "metric_tons"))
-test2 <- as.data.table(NutrientExtraction_perSFG %>% select (c(1, seq(3, 80, by = 7))) %>% pivot_longer(!simp_functional_group, names_to = "years", values_to = "metric_tons_SD"))
 
-NE_perSFG_forPlot <- cbind(test1, test2)
+# Merges the two long data frames to create the data frame needed for the plot.
+NE_perSFG_forPlot <- cbind(NutrientExtraction_perSFG_long1, NutrientExtraction_perSFG_long2)
 NE_perSFG_forPlot <- NE_perSFG_forPlot %>% select(-c(4:5))
 view(NE_perSFG_forPlot)
 
 
+# Creates the column to designate the nutrient in each row.
 NE_perSFG_forPlot$nutrient <- "NA"
 NE_perSFG_forPlot[years %in% c("C_extracted", "C_extracted_1960_64", "C_extracted_1993_97", "C_extracted_2014_18")]$nutrient <- "Carbon"
 NE_perSFG_forPlot[years %in% c("N_extracted", "N_extracted_1960_64", "N_extracted_1993_97", "N_extracted_2014_18")]$nutrient <- "Nitrogen"
 NE_perSFG_forPlot[years %in% c("P_extracted", "P_extracted_1960_64", "P_extracted_1993_97", "P_extracted_2014_18")]$nutrient <- "Phosphorous"
 
 
+# Changes the values to correspond to the correct time periods.
 NE_perSFG_forPlot[years %in% c("C_extracted", "N_extracted", "P_extracted")]$years <- "All Years"
 NE_perSFG_forPlot[years %in% c("C_extracted_1960_64", "N_extracted_1960_64", "P_extracted_1960_64")]$years <- "1960-64"
 NE_perSFG_forPlot[years %in% c("C_extracted_1993_97", "N_extracted_1993_97", "P_extracted_1993_97")]$years <- "1993-97"
@@ -617,7 +653,7 @@ NE_perSFG_forPlot[years %in% c("C_extracted_2014_18", "N_extracted_2014_18", "P_
 view(NE_perSFG_forPlot)
 
 
-
+# Designated some new labels for the simple functional groups to conform to figure editing guidelines.
 new_labs <- c("Benthopelagic" = "Benthopelagic", "Cephalopods" = "Cephalopods","Demersal" = "Demersal", 
               "Misc. Dem. Inverts" = "Misc. dem. inverts", "Pelagic" = "Pelagic", "Reef Fish" = "Reef fish", "Shrimps" = "Shrimps")
 
@@ -626,7 +662,13 @@ new_labs <- c("Benthopelagic" = "Benthopelagic", "Cephalopods" = "Cephalopods","
 
 
 ##### Extraction Plots #####
-CE_perSFG_plot2 <- NE_perSFG_forPlot %>% 
+
+# Designate the functional groups to be featured on the plots.
+plot_SFG <- c("Pelagic", "Demersal", "Benthopelagic", "Cephalopods", 
+              "Shrimps", "Misc. Dem. Inverts", "Reef Fish")
+
+## Panel a - Carbon extractions
+CE_perSFG_plot <- NE_perSFG_forPlot %>% 
   filter(simp_functional_group %in% c("Benthopelagic", "Cephalopods" ,"Demersal", 
                                       "Misc. Dem. Inverts", "Pelagic", "Reef Fish", "Shrimps"),
          years != "All Years",
@@ -637,8 +679,7 @@ CE_perSFG_plot2 <- NE_perSFG_forPlot %>%
   geom_errorbar(aes(ymin = metric_tons - metric_tons_SD, 
                     ymax = metric_tons + metric_tons_SD), 
                 width = 0.5, position=position_dodge(.9)) +
-  scale_x_discrete(name = NULL, limits = c(c("Pelagic", "Demersal", "Benthopelagic", "Cephalopods", 
-                                             "Shrimps", "Misc. Dem. Inverts", "Reef Fish")),
+  scale_x_discrete(name = NULL, limits = plot_SFG,
                    labels = new_labs) +
   scale_y_continuous(name = "Million tonnes", expand = c(0.02, 0.02),
                      limits = c(0, 25759737),
@@ -658,8 +699,8 @@ CE_perSFG_plot2 <- NE_perSFG_forPlot %>%
         legend.box.background = element_rect(colour = "black"))
 
 
-
-NE_perSFG_plot2 <- NE_perSFG_forPlot %>% 
+## Panel b - Nitrogen extractions
+NE_perSFG_plot <- NE_perSFG_forPlot %>% 
   filter(simp_functional_group %in% c("Benthopelagic", "Cephalopods" ,"Demersal", 
                                       "Misc. Dem. Inverts", "Pelagic", "Reef Fish", "Shrimps"),
          years != "All Years",
@@ -670,8 +711,7 @@ NE_perSFG_plot2 <- NE_perSFG_forPlot %>%
   geom_errorbar(aes(ymin = metric_tons - metric_tons_SD, 
                     ymax = metric_tons + metric_tons_SD), 
                 width = 0.5, position=position_dodge(.9)) +
-  scale_x_discrete(name = NULL, limits = c(c("Pelagic", "Demersal", "Benthopelagic", "Cephalopods", 
-                                             "Shrimps", "Misc. Dem. Inverts", "Reef Fish")),
+  scale_x_discrete(name = NULL, limits = plot_SFG,
                    labels = new_labs) +
   scale_y_continuous(name = "Million tonnes", expand = c(0.02, 0.02),
                      limits = c(0, 6537389),
@@ -688,20 +728,19 @@ NE_perSFG_plot2 <- NE_perSFG_forPlot %>%
         legend.position = "none")
 
 
-
-PE_perSFG_plot2 <- NE_perSFG_forPlot %>% 
+## Panel c - Phosphorus extractions
+PE_perSFG_plot <- NE_perSFG_forPlot %>% 
   filter(simp_functional_group %in% c("Benthopelagic", "Cephalopods" ,"Demersal", 
                                       "Misc. Dem. Inverts", "Pelagic", "Reef Fish", "Shrimps"),
          years != "All Years",
-         nutrient == "Phosphorous") %>% 
+         nutrient == "Phosphorus") %>% 
   ggplot(aes(x = simp_functional_group, y=metric_tons, 
              fill=factor(years, levels=c("1960-64", "1993-97", "2014-18"))), ) +
   geom_bar(color = "black", stat="identity", position = "dodge") +
   geom_errorbar(aes(ymin = metric_tons - metric_tons_SD, 
                     ymax = metric_tons + metric_tons_SD), 
                 width = 0.5, position=position_dodge(.9)) +
-  scale_x_discrete(name = NULL, limits = c(c("Pelagic", "Demersal", "Benthopelagic", "Cephalopods", 
-                                             "Shrimps", "Misc. Dem. Inverts", "Reef Fish")),
+  scale_x_discrete(name = NULL, limits = plot_SFG,
                    labels = new_labs) +
   scale_y_continuous(name = "Million tonnes", expand = c(0.02, 0.02),
                      limits = c(0, 1400000),
@@ -709,7 +748,7 @@ PE_perSFG_plot2 <- NE_perSFG_forPlot %>%
                      labels = c("0", "0.25", "0.50", "0.75", "1.00", "1.25")) +
   scale_fill_manual(values = cols_years) +
   guides(fill = guide_legend(title = "Time period")) +
-  labs(title = "c", subtitle = "Phosphorous") +
+  labs(title = "c", subtitle = "Phosphorus") +
   theme_classic() +
   theme(axis.text.x=element_text(angle=45, hjust=1, size = 11), 
         plot.title = element_text(size = 12, face = "bold"),
@@ -721,29 +760,31 @@ PE_perSFG_plot2 <- NE_perSFG_forPlot %>%
 
 
 ##### Comparison Plot #####
-test1 <- as.data.table(GloAv_NutrientExtraction_perSFG %>% select(c(1, seq(102, 190, by = 8))) %>% pivot_longer(!simp_functional_group, names_to = "years", values_to = "per_change"))
-test2 <- as.data.table(GloAv_NutrientExtraction_perSFG %>% select(c(1, seq(103, 191, by = 8))) %>% pivot_longer(!simp_functional_group, names_to = "years", values_to = "per_change_SD"))
 
-GloAv_NE_perSFG_forPlot <- cbind(test1, test2)
+# Transforms the GloAv_NutrientExtraction_perTG data frame from wide to long formats. The first data frame contains the estimates and the second contains the standard deviations.
+GloAv_NutrientExtraction_perSFG_long1 <- as.data.table(GloAv_NutrientExtraction_perSFG %>% select(c(1, seq(102, 190, by = 8))) %>% pivot_longer(!simp_functional_group, names_to = "years", values_to = "per_change"))
+GloAv_NutrientExtraction_perSFG_long2 <- as.data.table(GloAv_NutrientExtraction_perSFG %>% select(c(1, seq(103, 191, by = 8))) %>% pivot_longer(!simp_functional_group, names_to = "years", values_to = "per_change_SD"))
+
+
+# Merges the two long data frames to create the data frame needed for the plot.
+GloAv_NE_perSFG_forPlot <- cbind(GloAv_NutrientExtraction_perSFG_long1, GloAv_NutrientExtraction_perSFG_long2)
 GloAv_NE_perSFG_forPlot <- GloAv_NE_perSFG_forPlot %>% select(-c(4:5))
 
 
+# Creates the column to designate the nutrient in each row.
 GloAv_NE_perSFG_forPlot$nutrient <- "NA"
 GloAv_NE_perSFG_forPlot[years %in% c("C_dif_per", "C_dif_1960_64_per", "C_dif_1993_97_per", "C_dif_2014_18_per")]$nutrient <- "Carbon"
 GloAv_NE_perSFG_forPlot[years %in% c("N_dif_per", "N_dif_1960_64_per", "N_dif_1993_97_per", "N_dif_2014_18_per")]$nutrient <- "Nitrogen"
 GloAv_NE_perSFG_forPlot[years %in% c("P_dif_per", "P_dif_1960_64_per", "P_dif_1993_97_per", "P_dif_2014_18_per")]$nutrient <- "Phosphorous"
 
+
+# Changes the values to correspond to the correct time periods.
 GloAv_NE_perSFG_forPlot[years %in% c("C_dif_per", "N_dif_per", "P_dif_per")]$years <- "All Years"
 GloAv_NE_perSFG_forPlot[years %in% c("C_dif_1960_64_per", "N_dif_1960_64_per", "P_dif_1960_64_per")]$years <- "1960-64"
 GloAv_NE_perSFG_forPlot[years %in% c("C_dif_1993_97_per", "N_dif_1993_97_per", "P_dif_1993_97_per")]$years <- "1993-97"
 GloAv_NE_perSFG_forPlot[years %in% c("C_dif_2014_18_per", "N_dif_2014_18_per", "P_dif_2014_18_per")]$years <- "2014-18"
 
 
-
-# The following plots are showing the percentage of extraction composed by each trophic level where each individual plot is a nutrient and each group is a time period.
-
-plot_SFG <- c("Pelagic", "Demersal", "Benthopelagic", "Cephalopods", 
-              "Shrimps", "Misc. Dem. Inverts", "Reef Fish")
 
 # Comparison plot
 perSFG_per_dif_plot <- GloAv_NE_perSFG_forPlot %>% filter(years == "All Years") %>% 
@@ -774,10 +815,9 @@ perSFG_per_dif_plot <- GloAv_NE_perSFG_forPlot %>% filter(years == "All Years") 
 
 
 
-# Export figure
-setwd("G:/My Drive/Utah State/Thesis/Thesis_Manuscripts/C, N, P and Ecology Manuscript/Figures")
-jpeg("Figure7_ver2_manuscript.jpeg", width = 18, height = 18, units = 'cm', res = 600)
-Figure7 <- ggarrange(CE_perSFG_plot2, NE_perSFG_plot2, PE_perSFG_plot2, perSFG_per_dif_plot)
+##### Exporting Figure 7 #####
+jpeg("Figure7_manuscript.jpeg", width = 18, height = 18, units = 'cm', res = 600)
+Figure7 <- ggarrange(CE_perSFG_plot, NE_perSFG_plot, PE_perSFG_plot, perSFG_per_dif_plot)
 annotate_figure(Figure7,
                 bottom = text_grob("Functional group", size = 12))
 dev.off()
@@ -795,6 +835,9 @@ dev.off()
 
 #### SUPPLEMENTARY FIGURE 1 ####
 
+# This figure shows the absolute differences, in thousand tonnes, between our estimates and estimates produced by uniform values. Positive numbers indicate overestimates by uniform estimates, negative numbers indicate underestimations.
+
+## Panel a - Carbon extraction differences
 annualCE_dif_plot <- ggplot(GloAv_NutrientExtraction_perYear, aes(x = year, y = C_dif)) +
   geom_ribbon(aes(ymin = C_dif_lowCI, ymax = C_dif_highCI), alpha = 0.6, fill = "#56B4E9") +
   geom_line(lwd = 0.8) +
@@ -813,6 +856,7 @@ annualCE_dif_plot <- ggplot(GloAv_NutrientExtraction_perYear, aes(x = year, y = 
         axis.title =element_text(size=12))
 
 
+## Panel b - Nitrogen extraction differences
 annualNE_dif_plot <- ggplot(GloAv_NutrientExtraction_perYear, aes(x = year, y = N_dif)) +
   geom_ribbon(aes(ymin = N_dif_lowCI, ymax = N_dif_highCI), alpha = 0.6, fill = "#009E73") +
   geom_line(lwd = 0.8) +
@@ -831,6 +875,7 @@ annualNE_dif_plot <- ggplot(GloAv_NutrientExtraction_perYear, aes(x = year, y = 
         axis.title =element_text(size=12))
 
 
+## Panel c - Nitrogen extraction differences
 annualPE_dif_plot <- ggplot(GloAv_NutrientExtraction_perYear, aes(x = year, y = P_dif)) +
   geom_ribbon(aes(ymin = P_dif_lowCI, ymax = P_dif_highCI), alpha = 0.6, fill = "#D55E00") +
   geom_line(lwd = 0.8) +
@@ -850,7 +895,7 @@ annualPE_dif_plot <- ggplot(GloAv_NutrientExtraction_perYear, aes(x = year, y = 
 
 
 
-setwd("G:/My Drive/Utah State/Thesis/Thesis_Manuscripts/C, N, P and Ecology Manuscript/Figures")
+##### Exporting Supplementary Figure 1 #####
 jpeg("SupFig1_manuscript.jpeg", width = 18, height = 13.71, units = 'cm', res = 600)
 Figure1_comp <- ggarrange(annualCE_dif_plot, annualNE_dif_plot, annualPE_dif_plot)
 annotate_figure(Figure1_comp, bottom = text_grob("Year", size = 12))
