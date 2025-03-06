@@ -67,16 +67,13 @@ P_distributions <- matrix(
 )
 
 
-# Then, we multiplied the matrix of the generated composition values values by the landed amount (tonnes) to generate a distribution of 100 estimates of nutrient extractions. We used the Sea Around Us data (https://www.seaaroundus.org/data/) at the EEZ and High Seas level meaning we download the CSV data files for each EEZ (n=283) and High Seas region (n=18) and compiled all of the data into one data frame (Fisheries_NutrientExtraction) that comprised 6.7+ million records of landed catches (reported in tonnes in the SAU data).
+# Then, for each nutrient, we multiplied the matrix of generated composition values by the landed catch amounts (in tonnes) to produce a distribution of 100 extraction estimates. For this analysis, we used data from the Sea Around Us (SAU) project (available at https://www.seaaroundus.org/data/) at both the Exclusive Economic Zone (EEZ) and High Seas levels. Specifically, we downloaded CSV files for each EEZ (n=283) and High Seas region (n=18), filtered for catches from industrial fisheries, and compiled the data into a dataset containing over 6.7 million records of landed catches, reported in tonnes. These data were stored in the data frame Fisheries_NutrientExtraction. 
 
 C_extractions <- SAU_catch.data$tonnes * C_distributions
 N_extractions <- SAU_catch.data$tonnes * N_distributions
 P_extractions <- SAU_catch.data$tonnes * P_distributions
 
-# These extraction distribution matrices have been saved as CSVs which can be found in the following Figshare repository: https://doi.org/10.6084/m9.figshare.28500593.
-
-
-# Finally, we took C_extracted to be the mean of the 100 extraction estimates produced above. We also obtained the SD, IQR, and 95% CIs. The 'Fisheries_NutrientExtraction' represents our finalized data frame which had all the estimates of C, N, and P extraction per row of the fisheries record (n=)
+# We are not able to reproduce the SAU catch data in this repository. However, we provide the nutrient extraction distribution matrices as CSV files. These files are available in the following Figshare repository: https://doi.org/10.6084/m9.figshare.28500593. Additionally, we include the Fisheries_NutrientExtraction CSV file without the extraction data to facilitate reproducibility of the analyses described below. Each row in the Fisheries_NutrientExtraction data frame corresponds to the rows in the nutrient extraction distribution matrices. Therefore, the code provided below can be used to recalculate the nutrient extraction estimates presented in the manuscript.
 
 
 
@@ -91,6 +88,11 @@ C_extractions <- fread("C_extraction_distributionmatrix.csv")
 N_extractions <- fread("N_extraction_distributionmatrix.csv")
 
 P_extractions <- fread("P_extraction_distributionmatrix.csv")
+
+
+#### LOADING CATCH DATA INDEX DATA ####
+
+Fisheries_NutrientExtraction <- fread("Fisheries_NutrientExtraction.csv")
 
 
 
@@ -134,7 +136,7 @@ Fisheries_NutrientExtraction$P_extracted_highCI <- quantiles_CIs_P[5, ]
 
 #### ESTIMATING NUTRIENT EXTRACTIONS ####
 
-# For each group of extraction estimates (e.g., by year), we added up the distributions of 100 extraction estimates for all rows that matched the grouping category. For instance, to estimate annual nutrient extractions, we added up the distributions generated for all rows in the SAU database corresponding to a specific year. This process resulted in a single distribution of 100 estimates for each year. From this distribution, we calculated the mean to determine the estimated nutrient extraction. Additionally, the distribution was used to derive standard deviations (SDs) and 95% confidence intervals (CIs). This process was done for each year, time period, spatial region, trophic group, and functional group.
+# For each group of extraction estimates (e.g., by year), we added up the distributions of 100 extraction estimates for all rows that matched the grouping category. For instance, to estimate annual nutrient extractions, we added up the distributions generated for all rows in the SAU database corresponding to a specific year. This process resulted in a single distribution of 100 estimates for each year. From this distribution, we calculated the mean to determine the estimated nutrient extraction. Additionally, the distribution was used to derive standard deviations (SDs) and 95% confidence intervals (CIs). This process was done for each year, time period, spatial region, trophic group, and functional group. This can be reproduced by using extraction distribution matrices provided in the Figshare repository and the accompanying 
 
 
 ##### TOTAL NUTRIENT EXTRACTION #####
@@ -1464,7 +1466,7 @@ NutrientExtraction_perSFG$P_extracted_highCI_2014_18 <- quantiles_CIs_P[5, ]
 C_extractions_perFG <- data.frame(functional_group_id = unique(Fisheries_NutrientExtraction$functional_group_id))
 
 # Creates data frame to hold functional group extraction estimates.
-NutrientExtraction_perFG <- data.frame(functional_group_id = unique(Fisheries_NutrientExtraction$functional_group_id))
+NutrientExtraction_perFG <- data.frame(functional_group_id = unique(Fisheries_NutrientExtraction$functional_group_id), functional_group = unique(Fisheries_NutrientExtraction$functional_group))
 
 
 
