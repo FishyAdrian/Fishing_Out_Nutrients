@@ -8,18 +8,8 @@
 
 #### NECESSARY PACKAGES ####
 
-library(tidyverse)
-library(data.table)
-library(GGally)
-library(nlme)
-library(lme4)
-library (MuMIn)
-library(ggpubr)
-library(mvtnorm)
-library(ggplot2)
-library(reshape2)
-library(ggrepel)
-library(treemapify)
+library(data.table)  # For efficient data loading and writing
+library(tidyverse)   # For data manipulation and visualization
 
 
 
@@ -29,6 +19,9 @@ library(treemapify)
 
 
 # For the first step, we wanted to make sure we could generate distributions of our nutrient compositions that were between 0 and 1 (i.e., no negative values). To accomplish this, we calculated alpha and beta values for our nutrient composition values in order to generate beta distributions below.
+
+# Loads the Industrial Taxa Nutrient Content data frame.
+IndustrialTaxa_NutrientContent <- fread("IndustrialTaxa_NutrientContent.csv")
 
 
 # Modifies the IndustrialTaxa_NutrientContent data frame to produce Beta values of our nutrient compositions.
