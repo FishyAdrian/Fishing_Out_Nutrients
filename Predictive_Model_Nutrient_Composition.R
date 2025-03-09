@@ -8,20 +8,21 @@
 
 
 
-# We collected a notable amount of data from 2 datasets, Hicks et al. 2019 (https://github.com/mamacneil/GlobalFishNutrients) and Lucas et al. 2016 (https://doi.org/10.6084/m9.figshare.c.3304116.v1), which we do not have permission to reprint the data from. Therefore, we cannot provide the raw data used for some of the analysis detailed below. We do, however, list all of the sources from which we obtained data in Supplementary Data 1. We include all of the code used to generate our model and data for analysis below for transparency and reproducibility.
+# We collected a notable amount of data from 2 datasets, Hicks et al. 2019 (https://github.com/mamacneil/GlobalFishNutrients) and Lucas et al. 2016 (https://doi.org/10.6084/m9.figshare.c.3304116.v1), which we do not have permission to reprint the data from. Therefore, we cannot provide the raw data used to parameterize the models below. We do, however, list all of the sources from which we obtained data in Supplementary Data 1. We include all of the code used to generate our models and below for transparency and reproducibility. The models have also been included in the GitHub repository as the following RData file: "nutrient_ratio_models.RData".
 
 
 
 #### NECESSARY PACKAGES ####
 
-library(tidyverse)
-library(data.table)
-library(ggplot2)
-library(GGally)
-library(nlme)
-library (MuMIn)
-library(ggpubr)
-library(mvtnorm)
+library(data.table)  # For efficient data loading and writing
+library(tidyverse)   # For data manipulation and visualization
+library(nlme)        # For mixed-effects models
+library(MuMIn)       # For R-squared calculations
+library(mvtnorm)     # For multivariate normal distributions
+
+
+
+
 
 #### PREDICTIVE MODELS FOR NUTRIENT COMPOSITION ####
 
@@ -59,92 +60,6 @@ ratio_model <- function(data, ratio = NULL, nutrient = NULL) {
 
 # Sets model control values.
 ctrl <- lmeControl(opt = "optim", maxIter = 2000, msMaxIter = 2000, msMaxEval = 2000)
-
-
-
-
-##### C:N from N Content #####
-
-###### C:N from Wet N #####
-
-# These models were not generated because there was not a sufficient number of wet-weight C observations to parameterize the model.
-
-
-
-###### C:N from Dry N #####
-
-D_ME_CN_N <- lme(log_C_N ~ DryWeight_N * V.I.,
-                 random = ~ 1 + DryWeight_N | family/genus,
-                 method = "REML", data = Nutrient_Ratios[genus != "NA"], 
-                 na.action=na.exclude, control = ctrl)
-
-r.squaredGLMM(D_ME_CN_N)
-summary(D_ME_CN_N)
-# Variation explained by the fixed effects (R2 fixed): 0.36
-# Variation explained by the full model (R2 total): 0.93
-
-
-# Extracts fixed effect coefficients from model.
-fixed_cf <- D_ME_CN_N$coefficients$fixed
-
-
-# The code below joins the random effect values from the family and genus levels. The random effects reported for the genus level are additive to those reported for the corresponding family level.
-genus_rf <- setDT(ranef(D_ME_CN_N)$genus, keep.rownames = "Genus")
-family_rf <- setDT(ranef(D_ME_CN_N)$family, keep.rownames = "Family")
-genus_rf <- genus_rf %>% separate(Genus, c("Family", "Genus"))
-genus_rf <- merge(genus_rf, family_rf[ , c("Family", "(Intercept)", "DryWeight_N")], by = ("Family"), all.x = T)
-genus_rf$Intercept_rf <- genus_rf[ , 3] + genus_rf[ , 5]
-genus_rf$Slope_rf <- genus_rf[ , 4] + genus_rf[ , 6]
-genus_rf <- genus_rf[ , c(2, 7, 8)]
-genus_rf <- genus_rf %>% remove_rownames %>% column_to_rownames(var="Genus")
-family_rf <- ranef(D_ME_CN_N)$family
-
-# This code extracts the SD for the intercept and slope (and the correlation between the two) for the random effects.
-SD_Cor_genus <- intervals(D_ME_CN_N, level = 0.95, which = "all")$reStruct$genus[ , 2]
-SD_Cor_fam <- intervals(D_ME_CN_N, level = 0.95, which = "all")$reStruct$family[ , 2]
-
-
-# This code produces the variance-covariance matrices for the corresponding model.
-vcv_fam <- matrix(c(SD_Cor_fam[1]^2, prod(SD_Cor_fam),
-                    prod(SD_Cor_fam), SD_Cor_fam[2]^2), 
-                  nrow = 2, ncol = 2, byrow = T)
-vcv_genus <- matrix(c(SD_Cor_genus[1]^2, prod(SD_Cor_genus),
-                      prod(SD_Cor_genus), SD_Cor_genus[2]^2), 
-                    nrow = 2, ncol = 2, byrow = T)
-
-
-# This code produces a random normal distribution of 10,000 values of random effect values so that we can draw from these when making the predictions below. Essentially, this is to account for the observed variation across the random-effect groups (genus and family).
-rf_dist_fam <- rmvnorm(10000, sigma = vcv_fam)
-rf_dist_genus <- rmvnorm(10000, sigma = vcv_genus)
-
-
-# The code below creates the necessary data columns that will then be filled in.
-pred_Ratios$pred_log_CN_fromDryN = NA
-pred_Ratios$pred_log_CN_fromDryN_SD = NA
-
-
-# For loop to generate predicted nutrient ratios using the model's coefficients and random effects.
-for (J in 1:nrow(pred_Ratios)) {
-  # This `ifelse` bracket tells the for loop to use the the actual measured random effect for a group (if that group had one). Otherwise, we pulled a random effect value from the simulated normal distribution of the random effects (rf_dist) which we generated above.
-  if (pred_Ratios$genus[J] %in% rownames(genus_rf)) {
-    rf_use = genus_rf[which(rownames(genus_rf) == pred_Ratios$genus[J]), ]
-  }
-  else{
-    if (pred_Ratios$family[J] %in% rownames(family_rf)) {
-      rf_use = family_rf[which(rownames(family_rf) == pred_Ratios$family[J]), ]
-    }
-    else{rf_use = rf_dist_fam + rf_dist_genus}}
-  
-  pred_temp <- (fixed_cf[1] + rf_use[, 1]) + 
-    ((fixed_cf[2] + rf_use[, 2]) * pred_Ratios$DryWeight_N[J]) + 
-    (fixed_cf[3] * pred_Ratios$V.I.numeric[J]) + 
-    (fixed_cf[4] * pred_Ratios$DryWeight_N[J] * pred_Ratios$V.I.numeric[J]) + 
-    rnorm(10000, 0, sd = 0.05515624) # the SD seen in this last addition is the standard deviation of the model residuals; had to be manually input from the model summary
-  
-  # This generates a predicted nutrient ratio based on the simulated distribution of values above (pred_temp).
-  pred_Ratios$pred_log_CN_fromDryN[J] = mean(pred_temp)
-  pred_Ratios$pred_log_CN_fromDryN_SD[J] = sd(pred_temp)
-}
 
 
 
@@ -239,46 +154,45 @@ for (J in 1:nrow(pred_Ratios)) {
 
 
 
-##### C:P from P Content #####
+##### C:N from N Content #####
 
-###### C:P from Wet P ######
+###### C:N from Wet N #####
 
 # These models were not generated because there was not a sufficient number of wet-weight C observations to parameterize the model.
 
 
 
-###### C:P from Dry P ######
+###### C:N from Dry N #####
 
-D_ME_CP_P <- lme(log_C_P ~ DryWeight_Pwhole * V.I.,
-                 random = ~ 1 + DryWeight_Pwhole | family/genus,
+D_ME_CN_N <- lme(log_C_N ~ DryWeight_N * V.I.,
+                 random = ~ 1 + DryWeight_N | family/genus,
                  method = "REML", data = Nutrient_Ratios[genus != "NA"], 
                  na.action=na.exclude, control = ctrl)
 
-r.squaredGLMM(D_ME_CP_P)
-summary(D_ME_CP_P)
-# Variation explained by the fixed effects (R2 fixed): 0.91
-# Variation explained by the full model (R2 total): 0.98
+r.squaredGLMM(D_ME_CN_N)
+summary(D_ME_CN_N)
+# Variation explained by the fixed effects (R2 fixed): 0.36
+# Variation explained by the full model (R2 total): 0.93
 
 
 # Extracts fixed effect coefficients from model.
-fixed_cf <- D_ME_CP_P$coefficients$fixed
+fixed_cf <- D_ME_CN_N$coefficients$fixed
 
 
 # The code below joins the random effect values from the family and genus levels. The random effects reported for the genus level are additive to those reported for the corresponding family level.
-genus_rf <- setDT(ranef(D_ME_CP_P)$genus, keep.rownames = "Genus")
-family_rf <- setDT(ranef(D_ME_CP_P)$family, keep.rownames = "Family")
+genus_rf <- setDT(ranef(D_ME_CN_N)$genus, keep.rownames = "Genus")
+family_rf <- setDT(ranef(D_ME_CN_N)$family, keep.rownames = "Family")
 genus_rf <- genus_rf %>% separate(Genus, c("Family", "Genus"))
-genus_rf <- merge(genus_rf, family_rf[ , c("Family", "(Intercept)", "DryWeight_Pwhole")], by = ("Family"), all.x = T)
+genus_rf <- merge(genus_rf, family_rf[ , c("Family", "(Intercept)", "DryWeight_N")], by = ("Family"), all.x = T)
 genus_rf$Intercept_rf <- genus_rf[ , 3] + genus_rf[ , 5]
 genus_rf$Slope_rf <- genus_rf[ , 4] + genus_rf[ , 6]
 genus_rf <- genus_rf[ , c(2, 7, 8)]
 genus_rf <- genus_rf %>% remove_rownames %>% column_to_rownames(var="Genus")
-family_rf <- ranef(D_ME_CP_P)$family
-
+family_rf <- ranef(D_ME_CN_N)$family
 
 # This code extracts the SD for the intercept and slope (and the correlation between the two) for the random effects.
-SD_Cor_genus <- c(1.107801e-04, 1.033576e-08, 0)
-SD_Cor_fam <- c(0.35758034, 0.09762285, -1)
+SD_Cor_genus <- intervals(D_ME_CN_N, level = 0.95, which = "all")$reStruct$genus[ , 2]
+SD_Cor_fam <- intervals(D_ME_CN_N, level = 0.95, which = "all")$reStruct$family[ , 2]
 
 
 # This code produces the variance-covariance matrices for the corresponding model.
@@ -296,8 +210,8 @@ rf_dist_genus <- rmvnorm(10000, sigma = vcv_genus)
 
 
 # The code below creates the necessary data columns that will then be filled in.
-pred_Ratios$pred_log_CP_fromDryP = NA
-pred_Ratios$pred_log_CP_fromDryP_SD = NA
+pred_Ratios$pred_log_CN_fromDryN = NA
+pred_Ratios$pred_log_CN_fromDryN_SD = NA
 
 
 # For loop to generate predicted nutrient ratios using the model's coefficients and random effects.
@@ -313,14 +227,14 @@ for (J in 1:nrow(pred_Ratios)) {
     else{rf_use = rf_dist_fam + rf_dist_genus}}
   
   pred_temp <- (fixed_cf[1] + rf_use[, 1]) + 
-    ((fixed_cf[2] + rf_use[, 2]) * pred_Ratios$DryWeight_Pwhole[J]) + 
+    ((fixed_cf[2] + rf_use[, 2]) * pred_Ratios$DryWeight_N[J]) + 
     (fixed_cf[3] * pred_Ratios$V.I.numeric[J]) + 
-    (fixed_cf[4] * pred_Ratios$DryWeight_Pwhole[J] * pred_Ratios$V.I.numeric[J]) + 
-    rnorm(10000, 0, sd = 6.485351e-02) # the SD seen in this last addition is the standard deviation of the model residuals; had to be manually input from the model summary
+    (fixed_cf[4] * pred_Ratios$DryWeight_N[J] * pred_Ratios$V.I.numeric[J]) + 
+    rnorm(10000, 0, sd = 0.05515624) # the SD seen in this last addition is the standard deviation of the model residuals; had to be manually input from the model summary
   
   # This generates a predicted nutrient ratio based on the simulated distribution of values above (pred_temp).
-  pred_Ratios$pred_log_CP_fromDryP[J] = mean(pred_temp)
-  pred_Ratios$pred_log_CP_fromDryP_SD[J] = sd(pred_temp)
+  pred_Ratios$pred_log_CN_fromDryN[J] = mean(pred_temp)
+  pred_Ratios$pred_log_CN_fromDryN_SD[J] = sd(pred_temp)
 }
 
 
@@ -413,122 +327,56 @@ for (J in 1:nrow(pred_Ratios)) {
 
 
 
-##### N:P from P Content #####
+##### C:P from P Content #####
 
-###### N:P from Wet P ######
+###### C:P from Wet P ######
 
-W_ME_NP_P <- lme(log_N_P ~ WetWeight_Pwhole * V.I.,
-                   random = ~ 1 + WetWeight_Pwhole | family/genus,
-                   method = "REML", data = Nutrient_Ratios[genus != "NA"], 
-                   na.action=na.exclude, control = ctrl)
+# These models were not generated because there was not a sufficient number of wet-weight C observations to parameterize the model.
 
-r.squaredGLMM(W_ME_NP_P)
-summary(W_ME_NP_P)
-# Variation explained by the fixed effects (R2 fixed): 0.85
-# Variation explained by the full model (R2 total): 0.96
 
-# Extracts fixed effect coefficients from model
-fixed_cf <- W_ME_NP_P$coefficients$fixed
+
+###### C:P from Dry P ######
+
+D_ME_CP_P <- lme(log_C_P ~ DryWeight_Pwhole * V.I.,
+                 random = ~ 1 + DryWeight_Pwhole | family/genus,
+                 method = "REML", data = Nutrient_Ratios[genus != "NA"], 
+                 na.action=na.exclude, control = ctrl)
+
+r.squaredGLMM(D_ME_CP_P)
+summary(D_ME_CP_P)
+# Variation explained by the fixed effects (R2 fixed): 0.91
+# Variation explained by the full model (R2 total): 0.98
+
+
+# Extracts fixed effect coefficients from model.
+fixed_cf <- D_ME_CP_P$coefficients$fixed
 
 
 # The code below joins the random effect values from the family and genus levels. The random effects reported for the genus level are additive to those reported for the corresponding family level.
-genus_rf <- setDT(ranef(W_ME_NP_P)$genus, keep.rownames = "Genus")
-family_rf <- setDT(ranef(W_ME_NP_P)$family, keep.rownames = "Family")
-genus_rf <- genus_rf %>% separate(Genus, c("Family", "Genus"))
-genus_rf <- merge(genus_rf, family_rf[ , c("Family", "(Intercept)", "WetWeight_Pwhole")], by = ("Family"), all.x = T)
-genus_rf$Intercept_rf <- genus_rf[ , 3] + genus_rf[ , 5]
-genus_rf$Slope_rf <- genus_rf[ , 4] + genus_rf[ , 6]
-genus_rf <- genus_rf[ , c(2, 7, 8)]
-genus_rf <- genus_rf %>% remove_rownames %>% column_to_rownames(var="Genus")
-family_rf <- ranef(W_ME_NP_P)$family
-
-# This code extracts the SD for the intercept and slope (and the correlation between the two) for the random effects
-SD_Cor_genus <- intervals(W_ME_NP_P, level = 0.95, which = "all")$reStruct$genus[ , 2]
-SD_Cor_fam <- intervals(W_ME_NP_P, level = 0.95, which = "all")$reStruct$family[ , 2]
-
-# This code produces the variance-covariance matrices for the corresponding model
-vcv_fam <- matrix(c(SD_Cor_fam[1]^2, prod(SD_Cor_fam),
-                    prod(SD_Cor_fam), SD_Cor_fam[2]^2), 
-                  nrow = 2, ncol = 2, byrow = T)
-vcv_genus <- matrix(c(SD_Cor_genus[1]^2, prod(SD_Cor_genus),
-                      prod(SD_Cor_genus), SD_Cor_genus[2]^2), 
-                    nrow = 2, ncol = 2, byrow = T)  
-
-# This code produces a random normal distribution of 10,000 values of random effect values so that we can draw from these when making the predictions below. Essentially, this is to account for the observed variation across the random-effect groups (genus and family).
-rf_dist_fam <- rmvnorm(10000, sigma = vcv_fam)
-rf_dist_genus <- rmvnorm(10000, sigma = vcv_genus)
-
-
-
-# The code below creates the necessary data columns that will then be filled in.
-pred_Ratios$pred_log_NP_fromWetP = NA
-pred_Ratios$pred_log_NP_fromWetP = NA
-
-# For loop to generate predicted nutrient ratios using the model's coefficients and random effects.
-for (J in 1:nrow(pred_Ratios)) {
-  # This `ifelse` bracket tells the for loop to use the the actual measured random effect for a group (if that group had one). Otherwise, we pulled a random effect value from the simulated normal distribution of the random effects (rf_dist) which we generated above.
-  if (pred_Ratios$genus[J] %in% rownames(genus_rf)) {
-    rf_use = genus_rf[which(rownames(genus_rf) == pred_Ratios$genus[J]), ]
-  }
-  else{
-    if (pred_Ratios$family[J] %in% rownames(family_rf)) {
-      rf_use = family_rf[which(rownames(family_rf) == pred_Ratios$family[J]), ]
-    }
-    else{rf_use = rf_dist_fam + rf_dist_genus}} 
-  
-  # Replicates the model formula to 
-  pred_temp <- (fixed_cf[1] + rf_use[, 1]) + 
-    ((fixed_cf[2] + rf_use[, 2]) * pred_Ratios$WetWeight_Pwhole[J]) + 
-    (fixed_cf[3] * pred_Ratios$V.I.numeric[J]) + 
-    (fixed_cf[4] * pred_Ratios$WetWeight_Pwhole[J] * pred_Ratios$V.I.numeric[J]) + 
-    rnorm(10000, 0, sd = 0.1096825) # The SD seen in this last addition is the standard deviation of the model residual which was manually input from the model summary.
-  
-  # This generates a predicted nutrient ratio based on the simulated distribution of values above (pred_temp).
-  pred_Ratios$pred_log_NP_fromWetP[J] = mean(pred_temp) 
-  pred_Ratios$pred_log_NP_fromWetP[J] = sd(pred_temp)
-}
-
-
-
-
-
-###### N:P from Dry P ######
-
-D_ME_NP_P <- lme(log_N_P ~ DryWeight_Pwhole * V.I.,
-                   random = ~ 1 + DryWeight_Pwhole | family/genus,
-                   method = "REML", data = Nutrient_Ratios[genus != "NA"], 
-                   na.action=na.exclude, control = ctrl)
-
-r.squaredGLMM(D_ME_NP_P)
-summary(D_ME_NP_P)
-# Variation explained by the fixed effects (R2 fixed): 0.81
-# Variation explained by the full model (R2 total): 0.96
-
-# Extracts fixed effect coefficients from model
-fixed_cf <- D_ME_NP_P$coefficients$fixed
-
-# The code below joins the random effect values from the family and genus levels. The random effects reported for the genus level are additive to those reported for the corresponding family level.
-genus_rf <- setDT(ranef(D_ME_NP_P)$genus, keep.rownames = "Genus")
-family_rf <- setDT(ranef(D_ME_NP_P)$family, keep.rownames = "Family")
+genus_rf <- setDT(ranef(D_ME_CP_P)$genus, keep.rownames = "Genus")
+family_rf <- setDT(ranef(D_ME_CP_P)$family, keep.rownames = "Family")
 genus_rf <- genus_rf %>% separate(Genus, c("Family", "Genus"))
 genus_rf <- merge(genus_rf, family_rf[ , c("Family", "(Intercept)", "DryWeight_Pwhole")], by = ("Family"), all.x = T)
 genus_rf$Intercept_rf <- genus_rf[ , 3] + genus_rf[ , 5]
 genus_rf$Slope_rf <- genus_rf[ , 4] + genus_rf[ , 6]
 genus_rf <- genus_rf[ , c(2, 7, 8)]
 genus_rf <- genus_rf %>% remove_rownames %>% column_to_rownames(var="Genus")
-family_rf <- ranef(D_ME_NP_P)$family
+family_rf <- ranef(D_ME_CP_P)$family
 
-# This code extracts the SD for the intercept and slope (and the correlation between the two) for the random effects
-SD_Cor_genus <- intervals(D_ME_NP_P, level = 0.95, which = "all")$reStruct$genus[ , 2]
-SD_Cor_fam <- intervals(D_ME_NP_P, level = 0.95, which = "all")$reStruct$family[ , 2]
 
-# This code produces the variance-covariance matrices for the corresponding model
+# This code extracts the SD for the intercept and slope (and the correlation between the two) for the random effects.
+SD_Cor_genus <- c(1.107801e-04, 1.033576e-08, 0)
+SD_Cor_fam <- c(0.35758034, 0.09762285, -1)
+
+
+# This code produces the variance-covariance matrices for the corresponding model.
 vcv_fam <- matrix(c(SD_Cor_fam[1]^2, prod(SD_Cor_fam),
                     prod(SD_Cor_fam), SD_Cor_fam[2]^2), 
                   nrow = 2, ncol = 2, byrow = T)
 vcv_genus <- matrix(c(SD_Cor_genus[1]^2, prod(SD_Cor_genus),
                       prod(SD_Cor_genus), SD_Cor_genus[2]^2), 
-                    nrow = 2, ncol = 2, byrow = T)  
+                    nrow = 2, ncol = 2, byrow = T)
+
 
 # This code produces a random normal distribution of 10,000 values of random effect values so that we can draw from these when making the predictions below. Essentially, this is to account for the observed variation across the random-effect groups (genus and family).
 rf_dist_fam <- rmvnorm(10000, sigma = vcv_fam)
@@ -536,8 +384,8 @@ rf_dist_genus <- rmvnorm(10000, sigma = vcv_genus)
 
 
 # The code below creates the necessary data columns that will then be filled in.
-pred_Ratios$pred_log_NP_fromDryP = NA
-pred_Ratios$predNP_fromDryP_SD = NA
+pred_Ratios$pred_log_CP_fromDryP = NA
+pred_Ratios$pred_log_CP_fromDryP_SD = NA
 
 
 # For loop to generate predicted nutrient ratios using the model's coefficients and random effects.
@@ -556,11 +404,11 @@ for (J in 1:nrow(pred_Ratios)) {
     ((fixed_cf[2] + rf_use[, 2]) * pred_Ratios$DryWeight_Pwhole[J]) + 
     (fixed_cf[3] * pred_Ratios$V.I.numeric[J]) + 
     (fixed_cf[4] * pred_Ratios$DryWeight_Pwhole[J] * pred_Ratios$V.I.numeric[J]) + 
-    rnorm(10000, 0, sd = 0.09228913) # The SD seen in this last addition is the standard deviation of the model residual which was manually input from the model summary.
+    rnorm(10000, 0, sd = 6.485351e-02) # the SD seen in this last addition is the standard deviation of the model residuals; had to be manually input from the model summary
   
   # This generates a predicted nutrient ratio based on the simulated distribution of values above (pred_temp).
-  pred_Ratios$pred_log_NP_fromDryP[J] = mean(pred_temp)
-  pred_Ratios$predNP_fromDryP_SD[J] = sd(pred_temp)
+  pred_Ratios$pred_log_CP_fromDryP[J] = mean(pred_temp)
+  pred_Ratios$pred_log_CP_fromDryP_SD[J] = sd(pred_temp)
 }
 
 
@@ -576,8 +424,8 @@ W_ME_NP_N <- lme(log_N_P ~ WetWeight_N * V.I.,
                    method = "REML", data = Nutrient_Ratios[genus != "NA"], 
                    na.action=na.exclude, control = ctrl)
 
-summary(W_ME_NP_N)
 r.squaredGLMM(W_ME_NP_N)
+summary(W_ME_NP_N)
 # Variation explained by the fixed effects (R2 fixed): 0.20
 # Variation explained by the full model (R2 total): 0.75
 
@@ -642,8 +490,6 @@ for (J in 1:nrow(pred_Ratios)) {
   pred_Ratios$pred_log_NP_fromWetN[J] = mean(pred_temp)
   pred_Ratios$pred_log_NP_fromWetN_SD[J] = sd(pred_temp)
 }
-
-
 
 
 
@@ -726,6 +572,155 @@ for (J in 1:nrow(pred_Ratios)) {
 
 
 
+##### N:P from P Content #####
+
+###### N:P from Wet P ######
+
+W_ME_NP_P <- lme(log_N_P ~ WetWeight_Pwhole * V.I.,
+                 random = ~ 1 + WetWeight_Pwhole | family/genus,
+                 method = "REML", data = Nutrient_Ratios[genus != "NA"], 
+                 na.action=na.exclude, control = ctrl)
+
+r.squaredGLMM(W_ME_NP_P)
+summary(W_ME_NP_P)
+# Variation explained by the fixed effects (R2 fixed): 0.85
+# Variation explained by the full model (R2 total): 0.96
+
+# Extracts fixed effect coefficients from model
+fixed_cf <- W_ME_NP_P$coefficients$fixed
+
+
+# The code below joins the random effect values from the family and genus levels. The random effects reported for the genus level are additive to those reported for the corresponding family level.
+genus_rf <- setDT(ranef(W_ME_NP_P)$genus, keep.rownames = "Genus")
+family_rf <- setDT(ranef(W_ME_NP_P)$family, keep.rownames = "Family")
+genus_rf <- genus_rf %>% separate(Genus, c("Family", "Genus"))
+genus_rf <- merge(genus_rf, family_rf[ , c("Family", "(Intercept)", "WetWeight_Pwhole")], by = ("Family"), all.x = T)
+genus_rf$Intercept_rf <- genus_rf[ , 3] + genus_rf[ , 5]
+genus_rf$Slope_rf <- genus_rf[ , 4] + genus_rf[ , 6]
+genus_rf <- genus_rf[ , c(2, 7, 8)]
+genus_rf <- genus_rf %>% remove_rownames %>% column_to_rownames(var="Genus")
+family_rf <- ranef(W_ME_NP_P)$family
+
+# This code extracts the SD for the intercept and slope (and the correlation between the two) for the random effects
+SD_Cor_genus <- intervals(W_ME_NP_P, level = 0.95, which = "all")$reStruct$genus[ , 2]
+SD_Cor_fam <- intervals(W_ME_NP_P, level = 0.95, which = "all")$reStruct$family[ , 2]
+
+# This code produces the variance-covariance matrices for the corresponding model
+vcv_fam <- matrix(c(SD_Cor_fam[1]^2, prod(SD_Cor_fam),
+                    prod(SD_Cor_fam), SD_Cor_fam[2]^2), 
+                  nrow = 2, ncol = 2, byrow = T)
+vcv_genus <- matrix(c(SD_Cor_genus[1]^2, prod(SD_Cor_genus),
+                      prod(SD_Cor_genus), SD_Cor_genus[2]^2), 
+                    nrow = 2, ncol = 2, byrow = T)  
+
+# This code produces a random normal distribution of 10,000 values of random effect values so that we can draw from these when making the predictions below. Essentially, this is to account for the observed variation across the random-effect groups (genus and family).
+rf_dist_fam <- rmvnorm(10000, sigma = vcv_fam)
+rf_dist_genus <- rmvnorm(10000, sigma = vcv_genus)
+
+
+
+# The code below creates the necessary data columns that will then be filled in.
+pred_Ratios$pred_log_NP_fromWetP = NA
+pred_Ratios$pred_log_NP_fromWetP = NA
+
+# For loop to generate predicted nutrient ratios using the model's coefficients and random effects.
+for (J in 1:nrow(pred_Ratios)) {
+  # This `ifelse` bracket tells the for loop to use the the actual measured random effect for a group (if that group had one). Otherwise, we pulled a random effect value from the simulated normal distribution of the random effects (rf_dist) which we generated above.
+  if (pred_Ratios$genus[J] %in% rownames(genus_rf)) {
+    rf_use = genus_rf[which(rownames(genus_rf) == pred_Ratios$genus[J]), ]
+  }
+  else{
+    if (pred_Ratios$family[J] %in% rownames(family_rf)) {
+      rf_use = family_rf[which(rownames(family_rf) == pred_Ratios$family[J]), ]
+    }
+    else{rf_use = rf_dist_fam + rf_dist_genus}} 
+  
+  # Replicates the model formula to 
+  pred_temp <- (fixed_cf[1] + rf_use[, 1]) + 
+    ((fixed_cf[2] + rf_use[, 2]) * pred_Ratios$WetWeight_Pwhole[J]) + 
+    (fixed_cf[3] * pred_Ratios$V.I.numeric[J]) + 
+    (fixed_cf[4] * pred_Ratios$WetWeight_Pwhole[J] * pred_Ratios$V.I.numeric[J]) + 
+    rnorm(10000, 0, sd = 0.1096825) # The SD seen in this last addition is the standard deviation of the model residual which was manually input from the model summary.
+  
+  # This generates a predicted nutrient ratio based on the simulated distribution of values above (pred_temp).
+  pred_Ratios$pred_log_NP_fromWetP[J] = mean(pred_temp) 
+  pred_Ratios$pred_log_NP_fromWetP[J] = sd(pred_temp)
+}
+
+
+
+
+
+###### N:P from Dry P ######
+
+D_ME_NP_P <- lme(log_N_P ~ DryWeight_Pwhole * V.I.,
+                 random = ~ 1 + DryWeight_Pwhole | family/genus,
+                 method = "REML", data = Nutrient_Ratios[genus != "NA"], 
+                 na.action=na.exclude, control = ctrl)
+
+r.squaredGLMM(D_ME_NP_P)
+summary(D_ME_NP_P)
+# Variation explained by the fixed effects (R2 fixed): 0.81
+# Variation explained by the full model (R2 total): 0.96
+
+# Extracts fixed effect coefficients from model
+fixed_cf <- D_ME_NP_P$coefficients$fixed
+
+# The code below joins the random effect values from the family and genus levels. The random effects reported for the genus level are additive to those reported for the corresponding family level.
+genus_rf <- setDT(ranef(D_ME_NP_P)$genus, keep.rownames = "Genus")
+family_rf <- setDT(ranef(D_ME_NP_P)$family, keep.rownames = "Family")
+genus_rf <- genus_rf %>% separate(Genus, c("Family", "Genus"))
+genus_rf <- merge(genus_rf, family_rf[ , c("Family", "(Intercept)", "DryWeight_Pwhole")], by = ("Family"), all.x = T)
+genus_rf$Intercept_rf <- genus_rf[ , 3] + genus_rf[ , 5]
+genus_rf$Slope_rf <- genus_rf[ , 4] + genus_rf[ , 6]
+genus_rf <- genus_rf[ , c(2, 7, 8)]
+genus_rf <- genus_rf %>% remove_rownames %>% column_to_rownames(var="Genus")
+family_rf <- ranef(D_ME_NP_P)$family
+
+# This code extracts the SD for the intercept and slope (and the correlation between the two) for the random effects
+SD_Cor_genus <- intervals(D_ME_NP_P, level = 0.95, which = "all")$reStruct$genus[ , 2]
+SD_Cor_fam <- intervals(D_ME_NP_P, level = 0.95, which = "all")$reStruct$family[ , 2]
+
+# This code produces the variance-covariance matrices for the corresponding model
+vcv_fam <- matrix(c(SD_Cor_fam[1]^2, prod(SD_Cor_fam),
+                    prod(SD_Cor_fam), SD_Cor_fam[2]^2), 
+                  nrow = 2, ncol = 2, byrow = T)
+vcv_genus <- matrix(c(SD_Cor_genus[1]^2, prod(SD_Cor_genus),
+                      prod(SD_Cor_genus), SD_Cor_genus[2]^2), 
+                    nrow = 2, ncol = 2, byrow = T)  
+
+# This code produces a random normal distribution of 10,000 values of random effect values so that we can draw from these when making the predictions below. Essentially, this is to account for the observed variation across the random-effect groups (genus and family).
+rf_dist_fam <- rmvnorm(10000, sigma = vcv_fam)
+rf_dist_genus <- rmvnorm(10000, sigma = vcv_genus)
+
+
+# The code below creates the necessary data columns that will then be filled in.
+pred_Ratios$pred_log_NP_fromDryP = NA
+pred_Ratios$predNP_fromDryP_SD = NA
+
+
+# For loop to generate predicted nutrient ratios using the model's coefficients and random effects.
+for (J in 1:nrow(pred_Ratios)) {
+  # This `ifelse` bracket tells the for loop to use the the actual measured random effect for a group (if that group had one). Otherwise, we pulled a random effect value from the simulated normal distribution of the random effects (rf_dist) which we generated above.
+  if (pred_Ratios$genus[J] %in% rownames(genus_rf)) {
+    rf_use = genus_rf[which(rownames(genus_rf) == pred_Ratios$genus[J]), ]
+  }
+  else{
+    if (pred_Ratios$family[J] %in% rownames(family_rf)) {
+      rf_use = family_rf[which(rownames(family_rf) == pred_Ratios$family[J]), ]
+    }
+    else{rf_use = rf_dist_fam + rf_dist_genus}}
+  
+  pred_temp <- (fixed_cf[1] + rf_use[, 1]) + 
+    ((fixed_cf[2] + rf_use[, 2]) * pred_Ratios$DryWeight_Pwhole[J]) + 
+    (fixed_cf[3] * pred_Ratios$V.I.numeric[J]) + 
+    (fixed_cf[4] * pred_Ratios$DryWeight_Pwhole[J] * pred_Ratios$V.I.numeric[J]) + 
+    rnorm(10000, 0, sd = 0.09228913) # The SD seen in this last addition is the standard deviation of the model residual which was manually input from the model summary.
+  
+  # This generates a predicted nutrient ratio based on the simulated distribution of values above (pred_temp).
+  pred_Ratios$pred_log_NP_fromDryP[J] = mean(pred_temp)
+  pred_Ratios$predNP_fromDryP_SD[J] = sd(pred_temp)
+}
 
 
 
@@ -905,10 +900,8 @@ for (X in 1:nrow(pred_Ratios_NutrientContent)) {
 # Generated the columns to be populated with estimates of both dry- and wet-based P composition values.
 pred_Ratios_NutrientContent$derived_WetP <- NA
 pred_Ratios_NutrientContent$derived_WetP_SD <- NA
-pred_Ratios_NutrientContent$derived_WetP_SD_logit <- NA
 pred_Ratios_NutrientContent$derived_DryP <- NA
 pred_Ratios_NutrientContent$derived_DryP_SD <- NA
-pred_Ratios_NutrientContent$derived_DryP_SD_logit <- NA
 
 
 for (X in 1:nrow(pred_Ratios_NutrientContent)) {
