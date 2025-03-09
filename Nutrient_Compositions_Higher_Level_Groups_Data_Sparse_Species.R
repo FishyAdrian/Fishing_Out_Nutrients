@@ -6,7 +6,7 @@
 ###############################################################################
 
 
-# After we generated predicted nutrient compositions using the predicted ratios and simulations described in the Predicive Models script, we averaged our observed and predicted nutrient data at the species level to generate C, N, and P compositions. This was done to reduce the influence of over-represented species in our higher-level taxa calculations. 
+# After we generated predicted nutrient compositions using the predicted ratios and simulations described in the predicive models script, we averaged our observed and predicted nutrient data at the species level to generate C, N, and P compositions. This was done to reduce the influence of over-represented species in our higher-level taxa calculations. 
 
 # Then, for each taxonomic level above species, we calculated the mean and standard deviation of nutrient composition values based on each taxonomic level's corresponding species. 
 
@@ -16,18 +16,8 @@
 
 #### NECESSARY PACKAGES ####
 
-library(tidyverse)
-library(data.table)
-library(GGally)
-library(nlme)
-library(lme4)
-library (MuMIn)
-library(ggpubr)
-library(mvtnorm)
-library(ggplot2)
-library(reshape2)
-library(ggrepel)
-library(treemapify)
+library(tidyverse)   # For data manipulation and visualization
+library(data.table)  # For efficient data loading and writing
 
 
 
@@ -67,8 +57,8 @@ AggregatedNutrientContent_species <- AggregatedNutrientContent_species %>% mutat
 AggregatedNutrientContent_species <- AggregatedNutrientContent_species[!duplicated(AggregatedNutrientContent_species$genus_species),]
 
 # The code below changes the column names so that it matches how it appears in the SAU data frame.
-colnames(AggregatedNutrientContent_species)[2] <- "scientific_name"
-colnames(AggregatedNutrientContent_species)[3] <- "common_name"
+AggregatedNutrientContent_species <- AggregatedNutrientContent_species %>%
+  rename(scientific_name = TaxonName, common_name = CommonName)
 
 
 # Creates the columns that will hold our mean composition values per species.
@@ -1131,7 +1121,7 @@ for (Z in 1:nrow(IndustrialTaxa_NutrientContent)){
 
 #### INDUSTRIAL TAXA NUTRIENT COMPOSITION DATASET ####
 
-# The resulting data frame is the finished nutrient composition dataset that was used to calculate the nutrient extraction estimates in our study. This dataset, titled IndustrialTaxa_NutrientContent in this script, is provided as Supplementary Data 2 on the manuscript page and as IndustrialTaxa_NutrientContent in the GitHub repository and the Figshare repository.
+# The resulting data frame is the finished nutrient composition dataset that was used to calculate the nutrient extraction estimates in our study. This dataset, titled IndustrialTaxa_NutrientContent in this script, is provided as Supplementary Data 2 on the manuscript page and as well as the IndustrialTaxa_NutrientContent.csv file in the GitHub repository and the Figshare repository.
 
 
 
