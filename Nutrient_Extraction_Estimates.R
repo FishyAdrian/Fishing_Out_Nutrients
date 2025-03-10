@@ -18,7 +18,7 @@ library(tidyverse)   # For data manipulation and visualization
 #### LOADING NECESSARY DATA FRAMES ####
 
 # Loads the Industrial Taxa Nutrient Content data frame. This data frame contains all of the estimated C, N, and P nutrient compositions and their associated SDs.
-IndustrialTaxa_NutrientContent <- fread("IndustrialTaxa_NutrientContent.csv")
+IndustrialTaxa_NutrientContent <- fread("https://raw.githubusercontent.com/FishyAdrian/Fishing_Out_Nutrients/refs/heads/main/IndustrialTaxa_NutrientContent.csv")
 
 
 # To estimate nutrient extractions, we used data from the Sea Around Us (SAU) project (available at https://www.seaaroundus.org/data/) at both the Exclusive Economic Zone (EEZ) and High Seas levels. Specifically, we downloaded CSV files for each EEZ (n=283) and High Seas region (n=18), filtered for catches from industrial fisheries, and compiled the data into a dataset containing over 6.7 million records of landed catches, reported in tonnes. These data were stored in the data frame Fisheries_NutrientExtraction. We are not able to reproduce the SAU catch data in this repository. However, we include the Fisheries_NutrientExtraction_index CSV file which includes the identifying information for each row's taxa to allow our code to be reproduced with the extraction estimate distributions we produced in the analysis below. 
@@ -87,7 +87,9 @@ P_extractions <- SAU_catch.data$tonnes * P_distributions
 
 #### LOADING NUTRIENT EXTRACTION DISTRIBUTIONS ####
 
-# Each row in the Fisheries_NutrientExtraction data frame corresponds to the rows in the nutrient extraction distribution matrices below. Therefore, the code provided can be used to recalculate the nutrient extraction estimates presented in the manuscript. It is recommended to load and work with one distribution matrix at a time given their large file size.
+# Each row in the Fisheries_NutrientExtraction data frame corresponds to the rows in the nutrient extraction distribution matrices below. Therefore, the code provided can be used to recalculate the nutrient extraction estimates presented in the manuscript. 
+
+# You can download the extraction distribution matrices from the following Fighsare repository: https://doi.org/10.6084/m9.figshare.28500593. It is recommended to load and work with one distribution matrix at a time given their large file size.
 
 C_extractions <- fread("C_extraction_distributionmatrix.csv")
 
@@ -137,9 +139,11 @@ Fisheries_NutrientExtraction$P_extracted_highCI <- quantiles_CIs_P[5, ]
 
 
 
+
+
 #### ESTIMATING NUTRIENT EXTRACTIONS ####
 
-# For each group of extraction estimates (e.g., by year), we added up the distributions of 100 extraction estimates for all rows that matched the grouping category. For instance, to estimate annual nutrient extractions, we added up the distributions generated for all rows in the SAU database corresponding to a specific year. This process resulted in a single distribution of 100 estimates for each year. From this distribution, we calculated the mean to determine the estimated nutrient extraction. Additionally, the distribution was used to derive standard deviations (SDs) and 95% confidence intervals (CIs). This process was done for each year, time period, spatial region, trophic group, and functional group. This can be reproduced by using extraction distribution matrices provided in the Figshare repository and the accompanying 
+# For each group of extraction estimates (e.g., by year), we added up the distributions of 100 extraction estimates for all rows that matched the grouping category. For instance, to estimate annual nutrient extractions, we added up the distributions generated for all rows in the SAU database corresponding to a specific year. This process resulted in a single distribution of 100 estimates for each year. From this distribution, we calculated the mean to determine the estimated nutrient extraction. Additionally, the distribution was used to derive standard deviations (SDs) and 95% confidence intervals (CIs). This process was done for each year, time period, spatial region, trophic group, and functional group. This can be reproduced by using extraction distribution matrices provided in the Figshare repository (https://doi.org/10.6084/m9.figshare.28500593).
 
 
 ##### TOTAL NUTRIENT EXTRACTION #####
@@ -183,7 +187,7 @@ quantile(P_extractions_total, probs = c(0.25, 0.5, 0.75)) # 22,715,600; 22,820,2
 
 ##### PER YEAR #####
 
-# Carbon
+###### Carbon ######
 # Creates data frame for holding C distributions per year.
 C_extractions_per_year <- data.frame(year = c(1960:2018))
 
@@ -211,7 +215,7 @@ NutrientExtraction_perYear$C_extracted_highCI <- quantiles_CIs_C[5, ]
 
 
 
-# Nitrogen
+###### Nitrogen ######
 # Creates data frame for holding N distributions per year.
 N_extractions_per_year <- data.frame(year = c(1960:2018))
 
@@ -235,7 +239,7 @@ NutrientExtraction_perYear$N_extracted_highCI <- quantiles_CIs_N[5, ]
 
 
 
-# Phosphorus
+###### Phosphorus ######
 # Creates data frame for holding P distributions per year.
 P_extractions_per_year <- data.frame(year = c(1960:2018))
 
@@ -790,6 +794,8 @@ NutrientExtraction_perArea$P_extracted_lowIQR_2014_18 <- quantiles_CIs_P[2, ]
 NutrientExtraction_perArea$P_extracted_median_2014_18 <- quantiles_CIs_P[3, ]
 NutrientExtraction_perArea$P_extracted_highIQR_2014_18 <- quantiles_CIs_P[4, ]
 NutrientExtraction_perArea$P_extracted_highCI_2014_18 <- quantiles_CIs_P[5, ]
+
+
 
 
 
@@ -1755,3 +1761,6 @@ NutrientExtraction_perFG$P_extracted_lowIQR_2014_18 <- quantiles_CIs_P[2, ]
 NutrientExtraction_perFG$P_extracted_median_2014_18 <- quantiles_CIs_P[3, ]
 NutrientExtraction_perFG$P_extracted_highIQR_2014_18 <- quantiles_CIs_P[4, ]
 NutrientExtraction_perFG$P_extracted_highCI_2014_18 <- quantiles_CIs_P[5, ]
+
+
+
