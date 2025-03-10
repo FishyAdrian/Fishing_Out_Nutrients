@@ -13,15 +13,30 @@ library(tidyverse)   # For data manipulation and visualization
 
 
 
+
+
+#### LOADING NECESSARY DATA FRAMES ####
+
+# Loads the Industrial Taxa Nutrient Content data frame. This data frame contains all of the estimated C, N, and P nutrient compositions and their associated SDs.
+IndustrialTaxa_NutrientContent <- fread("IndustrialTaxa_NutrientContent.csv")
+
+
+# To estimate nutrient extractions, we used data from the Sea Around Us (SAU) project (available at https://www.seaaroundus.org/data/) at both the Exclusive Economic Zone (EEZ) and High Seas levels. Specifically, we downloaded CSV files for each EEZ (n=283) and High Seas region (n=18), filtered for catches from industrial fisheries, and compiled the data into a dataset containing over 6.7 million records of landed catches, reported in tonnes. These data were stored in the data frame Fisheries_NutrientExtraction. We are not able to reproduce the SAU catch data in this repository. However, we include the Fisheries_NutrientExtraction_index CSV file which includes the identifying information for each row's taxa to allow our code to be reproduced with the extraction estimate distributions we produced in the analysis below. 
+
+
+# Loads the Fisheries_NutrientExtraction data frame which holds the identifying information for each row of the Sea Around Us dataset.
+Fisheries_NutrientExtraction <- fread("Fisheries_NutrientExtraction_index.csv")
+
+
+
+
+
 #### GENERATING NUTRIENT COMPOSITION DISTRIBUTIONS ####
 
 # For each row of the SAU dataset, named "Fisheries_NutrientExtraction", which comprised 6.7+ million rows of catch data, we generated 100 nutrient values drawn from a random normal distribution of each taxa's mean nutrient compositions. Then, each nutrient composition value generated in the distribution was multiplied by the landed amount reported to produce 100 nutrient extraciton estimates.
 
 
 # For the first step, we wanted to make sure we could generate distributions of our nutrient compositions that were between 0 and 1 (i.e., no negative values). To accomplish this, we calculated alpha and beta values for our nutrient composition values in order to generate beta distributions below.
-
-# Loads the Industrial Taxa Nutrient Content data frame.
-IndustrialTaxa_NutrientContent <- fread("IndustrialTaxa_NutrientContent.csv")
 
 
 # Modifies the IndustrialTaxa_NutrientContent data frame to produce Beta values of our nutrient compositions.
@@ -60,13 +75,11 @@ P_distributions <- matrix(
 )
 
 
-# Then, for each nutrient, we multiplied the matrix of generated composition values by the landed catch amounts (in tonnes) to produce a distribution of 100 extraction estimates. For this analysis, we used data from the Sea Around Us (SAU) project (available at https://www.seaaroundus.org/data/) at both the Exclusive Economic Zone (EEZ) and High Seas levels. Specifically, we downloaded CSV files for each EEZ (n=283) and High Seas region (n=18), filtered for catches from industrial fisheries, and compiled the data into a dataset containing over 6.7 million records of landed catches, reported in tonnes. These data were stored in the data frame Fisheries_NutrientExtraction. 
+# Then, for each nutrient, we multiplied the matrix of generated composition values by the landed catch amounts (in tonnes) to produce a distribution of 100 extraction estimates for each row of the fisheries dataset.
 
 C_extractions <- SAU_catch.data$tonnes * C_distributions
 N_extractions <- SAU_catch.data$tonnes * N_distributions
 P_extractions <- SAU_catch.data$tonnes * P_distributions
-
-# We are not able to reproduce the SAU catch data in this repository. However, we provide the nutrient extraction distribution matrices as CSV files. These files are available in the following Figshare repository: https://doi.org/10.6084/m9.figshare.28500593. Additionally, we include the Fisheries_NutrientExtraction CSV file without the extraction data to facilitate reproducibility of the analyses described below. Each row in the Fisheries_NutrientExtraction data frame corresponds to the rows in the nutrient extraction distribution matrices. Therefore, the code provided below can be used to recalculate the nutrient extraction estimates presented in the manuscript.
 
 
 
@@ -74,7 +87,7 @@ P_extractions <- SAU_catch.data$tonnes * P_distributions
 
 #### LOADING NUTRIENT EXTRACTION DISTRIBUTIONS ####
 
-# It is recommended to load and work with each distribution matrix one at a time given their size. It is also recommended to use the data.table package to load it.
+# Each row in the Fisheries_NutrientExtraction data frame corresponds to the rows in the nutrient extraction distribution matrices below. Therefore, the code provided can be used to recalculate the nutrient extraction estimates presented in the manuscript. It is recommended to load and work with one distribution matrix at a time given their large file size.
 
 C_extractions <- fread("C_extraction_distributionmatrix.csv")
 
@@ -83,17 +96,12 @@ N_extractions <- fread("N_extraction_distributionmatrix.csv")
 P_extractions <- fread("P_extraction_distributionmatrix.csv")
 
 
-#### LOADING CATCH DATA INDEX DATA ####
-
-Fisheries_NutrientExtraction <- fread("Fisheries_NutrientExtraction.csv")
-
-
 
 
 
 #### ESTIMATING MEAN NUTRIENT EXTRACTIONS ####
 
-# The following code generates the mean nutrient extraction for each nutrient for each row in the compiled catch dataset. It also generates corresponding SDs, the upper and lower bounds of the IQR, and the upper and lower bounds of the 95% confidence intervals.
+# The following code generates the mean nutrient extraction for each nutrient for each row in the Fisheries_NutrientExtraction data frame. It also generates corresponding SDs, the upper and lower bounds of the IQR, and the upper and lower bounds of the 95% confidence intervals.
 
 # Carbon
 Fisheries_NutrientExtraction$C_extracted <- apply(C_extractions, 1, FUN = mean)
@@ -105,6 +113,7 @@ Fisheries_NutrientExtraction$C_extracted_median <- quantiles_CIs_C[3, ]
 Fisheries_NutrientExtraction$C_extracted_highIQR <- quantiles_CIs_C[4, ]
 Fisheries_NutrientExtraction$C_extracted_highCI <- quantiles_CIs_C[5, ]
 
+
 # Nitrogen
 Fisheries_NutrientExtraction$N_extracted <- apply(N_extractions, 1, FUN = mean)
 Fisheries_NutrientExtraction$N_extracted_SD <- apply(N_extractions, 1, FUN = sd)
@@ -114,6 +123,7 @@ Fisheries_NutrientExtraction$N_extracted_lowIQR <- quantiles_CIs_N[2, ]
 Fisheries_NutrientExtraction$N_extracted_median <- quantiles_CIs_N[3, ]
 Fisheries_NutrientExtraction$N_extracted_highIQR <- quantiles_CIs_N[4, ]
 Fisheries_NutrientExtraction$N_extracted_highCI <- quantiles_CIs_N[5, ]
+
 
 # Phosphorus
 Fisheries_NutrientExtraction$P_extracted <- apply(P_extractions, 1, FUN = mean)
@@ -136,8 +146,15 @@ Fisheries_NutrientExtraction$P_extracted_highCI <- quantiles_CIs_P[5, ]
 
 # Total
 C_extractions_total <- colSums(C_extractions[which(Fisheries_NutrientExtraction$year %in% c(1960:2018))])
+mean(C_extractions_total)
+
 N_extractions_total <- colSums(N_extractions[which(Fisheries_NutrientExtraction$year %in% c(1960:2018))])
+mean(N_extractions_total)
+
 P_extractions_total <- colSums(P_extractions[which(Fisheries_NutrientExtraction$year %in% c(1960:2018))])
+mean(P_extractions_total)
+
+# The following estimates should result from the operations above.
 # Carbon = 431,158,275 tonnes
 # Nitrogen = 110,292,936 tonnes
 # Phosphorus = 22,817,918 tonnes
