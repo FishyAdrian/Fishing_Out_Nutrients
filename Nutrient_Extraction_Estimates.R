@@ -105,7 +105,7 @@ P_extractions <- fread("P_extraction_distributionmatrix.csv")
 
 # The following code generates the mean nutrient extraction for each nutrient for each row in the Fisheries_NutrientExtraction data frame. It also generates corresponding SDs, the upper and lower bounds of the IQR, and the upper and lower bounds of the 95% confidence intervals.
 
-# Carbon
+##### Carbon #####
 Fisheries_NutrientExtraction$C_extracted <- apply(C_extractions, 1, FUN = mean)
 Fisheries_NutrientExtraction$C_extracted_SD <- apply(C_extractions, 1, FUN = sd)
 quantiles_CIs_C <- apply(C_extractions, 1, FUN = quantile, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
@@ -116,7 +116,7 @@ Fisheries_NutrientExtraction$C_extracted_highIQR <- quantiles_CIs_C[4, ]
 Fisheries_NutrientExtraction$C_extracted_highCI <- quantiles_CIs_C[5, ]
 
 
-# Nitrogen
+##### Nitrogen #####
 Fisheries_NutrientExtraction$N_extracted <- apply(N_extractions, 1, FUN = mean)
 Fisheries_NutrientExtraction$N_extracted_SD <- apply(N_extractions, 1, FUN = sd)
 quantiles_CIs_N <- apply(N_extractions, 1, FUN = quantile, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
@@ -127,17 +127,7 @@ Fisheries_NutrientExtraction$N_extracted_highIQR <- quantiles_CIs_N[4, ]
 Fisheries_NutrientExtraction$N_extracted_highCI <- quantiles_CIs_N[5, ]
 
 
-# Phosphorus
-Fisheries_NutrientExtraction$P_extracted <- apply(P_extractions, 1, FUN = mean)
-Fisheries_NutrientExtraction$P_extracted_SD <- apply(P_extractions, 1, FUN = sd)
-quantiles_CIs_P <- apply(P_extractions, 1, FUN = quantile, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
-Fisheries_NutrientExtraction$P_extracted_lowCI <- quantiles_CIs_P[1, ]
-Fisheries_NutrientExtraction$P_extracted_lowIQR <- quantiles_CIs_P[2, ]
-Fisheries_NutrientExtraction$P_extracted_median <- quantiles_CIs_P[3, ]
-Fisheries_NutrientExtraction$P_extracted_highIQR <- quantiles_CIs_P[4, ]
-Fisheries_NutrientExtraction$P_extracted_highCI <- quantiles_CIs_P[5, ]
-
-
+ 
 
 
 

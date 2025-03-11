@@ -8,23 +8,11 @@
 
 #### NECESSARY PACKAGES ####
 
-library(tidyverse)
-library(data.table)
-library(GGally)
-library(nlme)
-library(lme4)
-library (MuMIn)
-library(ggpubr)
-library(mvtnorm)
-library(ggplot2)
-library(reshape2)
-library(ggrepel)
-library(treemapify)
-library(patchwork)
-library(xtable)
-library(cowplot)
-library(grid)
-library(gridExtra)
+library(data.table)  # For efficient data loading and writing
+library(tidyverse)   # For data manipulation and visualization
+library(ggplot2) # For generating plots
+library(ggpubr) # For arranging plots
+library(scales) # For formatting axis labels
 
 
 
@@ -192,6 +180,7 @@ annualN.P_plot <- ggplot(NutrientRatios_perYear, aes(x = year, y = N.P_mean)) +
 
 
 ##### Exporting Figure 1 #####
+# We cannot include the landings plot here but the code for the figure is reproduced below. A second version without the landings plot
 jpeg("Figure1_manuscript.jpeg", width = 18, height = 19.38, units = 'cm', res = 600)
 
 # Sets up blank
@@ -199,6 +188,43 @@ blank <- ggplot() + geom_blank() + theme_void()
 
 # Sets up left-side panels
 Figure1.w.ratios_1 <- ggarrange(annualLandings_plot,
+                                annualNE_plot,
+                                annualC.N_plot,
+                                annualN.P_plot,
+                                ncol = 1, nrow = 4,
+                                align = c("v"),
+                                heights = c(1, 1, 1, 1.16))
+Figure1.w.ratios_1 <- annotate_figure(Figure1.w.ratios_1,
+                                      left = text_grob("Molar ratio                                                      Million tonnes", rot = 90, size = 12))
+
+# Sets up right-side panels
+Figure1.w.ratios_2 <- ggarrange(annualCE_plot,
+                                annualPE_plot,
+                                annualC.P_plot,
+                                blank,
+                                ncol = 1, nrow = 4,
+                                align = c("v"),
+                                heights = c(1, 1, 1.16, 1))
+
+# Combines two sides
+Figure1.w.ratios <- ggarrange(Figure1.w.ratios_1, Figure1.w.ratios_2,
+                              ncol = 2,
+                              align = "v")
+# Labels the x-axis
+annotate_figure(Figure1.w.ratios,
+                bottom = text_grob("Year", size = 12))
+
+dev.off()
+
+
+# Version without the landings plot.
+jpeg("Figure1_manuscript.jpeg", width = 18, height = 19.38, units = 'cm', res = 600)
+
+# Sets up blank
+blank <- ggplot() + geom_blank() + theme_void()
+
+# Sets up left-side panels
+Figure1.w.ratios_1 <- ggarrange(blank,
                                 annualNE_plot,
                                 annualC.N_plot,
                                 annualN.P_plot,
@@ -286,7 +312,7 @@ NE_perTG_forPlot <- NE_perTG_forPlot %>% select(-c(4:5))
 NE_perTG_forPlot$nutrient <- "NA"
 NE_perTG_forPlot[years %in% c("C_extracted", "C_extracted_1960_64", "C_extracted_1993_97", "C_extracted_2014_18")]$nutrient <- "Carbon"
 NE_perTG_forPlot[years %in% c("N_extracted", "N_extracted_1960_64", "N_extracted_1993_97", "N_extracted_2014_18")]$nutrient <- "Nitrogen"
-NE_perTG_forPlot[years %in% c("P_extracted", "P_extracted_1960_64", "P_extracted_1993_97", "P_extracted_2014_18")]$nutrient <- "Phosphorous"
+NE_perTG_forPlot[years %in% c("P_extracted", "P_extracted_1960_64", "P_extracted_1993_97", "P_extracted_2014_18")]$nutrient <- "Phosphorus"
 
 # Changes the values to correspond to the correct time periods.
 NE_perTG_forPlot[years %in% c("C_extracted", "N_extracted", "P_extracted")]$years <- "All Years"
@@ -359,7 +385,7 @@ NE_perTG_plot <- NE_perTG_forPlot %>% filter(years != "All Years" & nutrient == 
         legend.position = "none")
 
 ## Panel e - Phosphorus extractions
-PE_perTG_plot <- NE_perTG_forPlot %>% filter(years != "All Years" & nutrient == "Phosphorous") %>% ggplot(aes(x = trophic_group, y=metric_tons, 
+PE_perTG_plot <- NE_perTG_forPlot %>% filter(years != "All Years" & nutrient == "Phosphorus") %>% ggplot(aes(x = trophic_group, y=metric_tons, 
                                                                                                               fill=factor(years, levels= rev(c("2014-18", "1993-97", "1960-64", "All Years"))))) +
   geom_bar(color = "black", stat="identity", position = "dodge") +
   geom_errorbar(aes(ymin = metric_tons - metric_tons_SD, 
@@ -441,6 +467,8 @@ perTG_per_dif_plot <- GloAv_NE_perTG_forPlot %>% filter(years == "All Years") %>
 
 
 ##### Exporting Figure 4 #####
+
+# The 9 rows that are indicated as removed are those trophic groups (Primary producers and Top predators) that were not included in the plot.
 
 jpeg("Figure4_manuscript.jpeg", width = 6.5, height = 5.75, units = 'in', res = 600)
 Figure4.4panel <- ggarrange(CE_perTG_plot, NE_perTG_plot, PE_perTG_plot, perTG_per_dif_plot,
@@ -635,14 +663,13 @@ NutrientExtraction_perSFG_long2 <- as.data.table(NutrientExtraction_perSFG %>% s
 # Merges the two long data frames to create the data frame needed for the plot.
 NE_perSFG_forPlot <- cbind(NutrientExtraction_perSFG_long1, NutrientExtraction_perSFG_long2)
 NE_perSFG_forPlot <- NE_perSFG_forPlot %>% select(-c(4:5))
-view(NE_perSFG_forPlot)
 
 
 # Creates the column to designate the nutrient in each row.
 NE_perSFG_forPlot$nutrient <- "NA"
 NE_perSFG_forPlot[years %in% c("C_extracted", "C_extracted_1960_64", "C_extracted_1993_97", "C_extracted_2014_18")]$nutrient <- "Carbon"
 NE_perSFG_forPlot[years %in% c("N_extracted", "N_extracted_1960_64", "N_extracted_1993_97", "N_extracted_2014_18")]$nutrient <- "Nitrogen"
-NE_perSFG_forPlot[years %in% c("P_extracted", "P_extracted_1960_64", "P_extracted_1993_97", "P_extracted_2014_18")]$nutrient <- "Phosphorous"
+NE_perSFG_forPlot[years %in% c("P_extracted", "P_extracted_1960_64", "P_extracted_1993_97", "P_extracted_2014_18")]$nutrient <- "Phosphorus"
 
 
 # Changes the values to correspond to the correct time periods.
@@ -650,7 +677,6 @@ NE_perSFG_forPlot[years %in% c("C_extracted", "N_extracted", "P_extracted")]$yea
 NE_perSFG_forPlot[years %in% c("C_extracted_1960_64", "N_extracted_1960_64", "P_extracted_1960_64")]$years <- "1960-64"
 NE_perSFG_forPlot[years %in% c("C_extracted_1993_97", "N_extracted_1993_97", "P_extracted_1993_97")]$years <- "1993-97"
 NE_perSFG_forPlot[years %in% c("C_extracted_2014_18", "N_extracted_2014_18", "P_extracted_2014_18")]$years <- "2014-18"
-view(NE_perSFG_forPlot)
 
 
 # Designated some new labels for the simple functional groups to conform to figure editing guidelines.
@@ -775,7 +801,7 @@ GloAv_NE_perSFG_forPlot <- GloAv_NE_perSFG_forPlot %>% select(-c(4:5))
 GloAv_NE_perSFG_forPlot$nutrient <- "NA"
 GloAv_NE_perSFG_forPlot[years %in% c("C_dif_per", "C_dif_1960_64_per", "C_dif_1993_97_per", "C_dif_2014_18_per")]$nutrient <- "Carbon"
 GloAv_NE_perSFG_forPlot[years %in% c("N_dif_per", "N_dif_1960_64_per", "N_dif_1993_97_per", "N_dif_2014_18_per")]$nutrient <- "Nitrogen"
-GloAv_NE_perSFG_forPlot[years %in% c("P_dif_per", "P_dif_1960_64_per", "P_dif_1993_97_per", "P_dif_2014_18_per")]$nutrient <- "Phosphorous"
+GloAv_NE_perSFG_forPlot[years %in% c("P_dif_per", "P_dif_1960_64_per", "P_dif_1993_97_per", "P_dif_2014_18_per")]$nutrient <- "Phosphorus"
 
 
 # Changes the values to correspond to the correct time periods.
@@ -789,7 +815,7 @@ GloAv_NE_perSFG_forPlot[years %in% c("C_dif_2014_18_per", "N_dif_2014_18_per", "
 # Comparison plot
 perSFG_per_dif_plot <- GloAv_NE_perSFG_forPlot %>% filter(years == "All Years") %>% 
   ggplot(aes(x = simp_functional_group, y=per_change, 
-             fill=factor(nutrient, levels= c("Carbon", "Nitrogen", "Phosphorous")))) +
+             fill=factor(nutrient, levels= c("Carbon", "Nitrogen", "Phosphorus")))) +
   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.8, color = "black") +
   geom_bar(color = "black", stat="identity", position = "dodge") +
   geom_errorbar(aes(ymin = per_change - per_change_SD, 

@@ -12,19 +12,9 @@
 
 #### NECESSARY PACKAGES ####
 
-library(tidyverse)
-library(data.table)
-library(GGally)
-library(nlme)
-library(lme4)
-library (MuMIn)
-library(ggpubr)
-library(mvtnorm)
-library(ggplot2)
-library(reshape2)
-library(ggrepel)
-library(treemapify)
-library(matrixStats)
+library(data.table)  # For efficient data loading and writing
+library(tidyverse)   # For data manipulation and visualization
+library(matrixStats) # For row-wise stats.
 
 
 

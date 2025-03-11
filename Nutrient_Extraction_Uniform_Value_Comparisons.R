@@ -14,18 +14,8 @@
 
 #### NECESSARY PACKAGES ####
 
-library(tidyverse)
-library(data.table)
-library(GGally)
-library(nlme)
-library(lme4)
-library (MuMIn)
-library(ggpubr)
-library(mvtnorm)
-library(ggplot2)
-library(reshape2)
-library(ggrepel)
-library(treemapify)
+library(data.table)  # For efficient data loading and writing
+library(tidyverse)   # For data manipulation and visualization
 
 
 
@@ -82,7 +72,7 @@ GloAv_NutrientExtraction_perYear <- GloAv_NutrientExtraction_perYear %>%
 
 # The following code is to produce the uniform estimates per marine region.
 
-GloAv_NutrientExtraction_perArea <- Fisheries_NutrientExtraction %>% group_by(area_name) %>%
+GloAv_NutrientExtraction_perArea <- Fisheries_NutrientExtraction %>% group_by(area_name, area_km2) %>%
   filter(year %in% c(1960:2018)) %>% 
   summarize(GloAv_C_extracted = sum(tonnes * 0.125, na.rm = TRUE),
             GloAv_C_1960_64 = sum(ifelse(between(year, 1960, 1964),tonnes * 0.125, 0), na.rm = TRUE),
@@ -102,7 +92,13 @@ GloAv_NutrientExtraction_perArea <- Fisheries_NutrientExtraction %>% group_by(ar
 GloAv_NutrientExtraction_perArea <- GloAv_NutrientExtraction_perArea %>%
   mutate(GloAv_C_perSqKm = GloAv_C_extracted/area_km2,
          GloAv_N_perSqKm = GloAv_N_extracted/area_km2,
-         GloAv_P_perSqKm = GloAv_P_extracted/area_km2) %>% 
+         GloAv_P_perSqKm = GloAv_P_extracted/area_km2)
+
+
+# Joins original estimates to the new GloAv data frame so that estimates from both methods can be compared. 
+GloAv_NutrientExtraction_perArea <- left_join(GloAv_NutrientExtraction_perArea,
+                                              NutrientExtraction_perArea,
+                                              by = "area_name") %>% 
   
   # Percent difference
   mutate(C_perSqKm_dif = GloAv_C_perSqKm - C_extracted_perSqKm,
@@ -150,7 +146,13 @@ GloAv_NutrientExtraction_perTG <- Fisheries_NutrientExtraction %>% group_by(trop
             GloAv_P_1993_97 = sum(ifelse(between(year, 1993, 1997),tonnes * 0.006, 0), na.rm = TRUE),
             GloAv_P_2014_18 = sum(ifelse(between(year, 2014, 2018),tonnes * 0.006, 0), na.rm = TRUE))
 
-GloAv_NutrientExtraction_perTG <- merge(NutrientExtraction_perTG, GloAv_NutrientExtraction_perTG, by = "trophic_group",all.x = TRUE)
+
+# Joins original estimates to the new GloAv data frame so that estimates from both methods can be compared. 
+GloAv_NutrientExtraction_perTG <- left_join(GloAv_NutrientExtraction_perTG,
+                                            NutrientExtraction_perTG, 
+                                            by = "trophic_group")
+
+
 # Calculate difference between using global averages and our composition estimates. Positive numbers indicate overestimates by global averages, negative numbers indicate underestimates
 GloAv_NutrientExtraction_perTG <- GloAv_NutrientExtraction_perTG %>% 
   #Carbon
@@ -288,7 +290,13 @@ GloAv_NutrientExtraction_perSFG <- Fisheries_NutrientExtraction %>% group_by(sim
             GloAv_N_2014_18 = sum(ifelse(between(year, 2014, 2018),tonnes * 0.028, 0), na.rm = TRUE), 
             GloAv_P_2014_18 = sum(ifelse(between(year, 2014, 2018),tonnes * 0.006, 0), na.rm = TRUE))
 
-GloAv_NutrientExtraction_perSFG <- merge(NutrientExtraction_perSFG, GloAv_NutrientExtraction_perSFG, by = "simp_functional_group",all.x = TRUE)
+
+# Joins original estimates to the new GloAv data frame so that estimates from both methods can be compared. 
+GloAv_NutrientExtraction_perSFG <- left_join(GloAv_NutrientExtraction_perSFG, 
+                                             NutrientExtraction_perSFG, 
+                                             by = "simp_functional_group")
+
+
 # Calculate difference between using global averages and our composition estimates. Positive numbers indicate overestimations by global averages, negative numbers indicate underestimations.
 GloAv_NutrientExtraction_perSFG <- GloAv_NutrientExtraction_perSFG %>% 
   mutate(C_dif = GloAv_C_extracted - C_extracted,

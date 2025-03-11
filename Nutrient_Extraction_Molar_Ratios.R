@@ -5,22 +5,12 @@
 #                                                                             #
 ###############################################################################
 
-# This script was written after the first draft to calculate the molar ratios of the extractions. Therefore, that is why these code are seperate from the original nutrient extraction estimates script.
+# NOTE: This could should be used only after you have ran all the code from the 'Nutrient_Extraction_Estimates' so that the necessary data frames for the code below have been generated.
 
 #### NECESSARY PACKAGES ####
 
-library(tidyverse)
-library(data.table)
-library(GGally)
-library(nlme)
-library(lme4)
-library (MuMIn)
-library(ggpubr)
-library(mvtnorm)
-library(ggplot2)
-library(reshape2)
-library(ggrepel)
-library(treemapify)
+library(data.table)  # For efficient data loading and writing
+library(tidyverse)   # For data manipulation and visualization
 
 
 
