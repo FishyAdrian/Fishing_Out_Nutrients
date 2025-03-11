@@ -187,6 +187,11 @@ quantile(P_extractions_total, probs = c(0.25, 0.5, 0.75)) # 22,715,600; 22,820,2
 
 ##### PER YEAR #####
 
+# Generates a data frame to summarize nutrient extraction estimates per year.
+NutrientExtraction_perYear <- data.frame(year = c(1960:2018))
+
+
+
 ###### Carbon ######
 # Creates data frame for holding C distributions per year.
 C_extractions_per_year <- data.frame(year = c(1960:2018))
@@ -197,10 +202,6 @@ for (A in 1:nrow(C_extractions_per_year)) {
   C_extractions_per_year[A, 2:101] <- colSums(C_extractions[which(C_extractions_per_year$year[A] == Fisheries_NutrientExtraction$year)])
   
 }
-
-
-# Generates a data frame to summarize nutrient extraction estimates per year.
-NutrientExtraction_perYear <- data.frame(year = c(1960:2018))
 
 
 # The following code generates the mean C extraction for each year between 1960 and 2018. It also generates corresponding SDs, the upper and lower bounds of the IQR, and the upper and lower bounds of the 95% confidence intervals.
@@ -515,7 +516,10 @@ NutrientExtraction_perTimePeriod[3, ]$P_extracted_highCI <- quantiles_CIs_P[5, ]
 C_extractions_perArea <- data.frame(area_name = unique(Fisheries_NutrientExtraction$area_name))
 
 # Creates data frame to hold marine region extraction estimates.
-NutrientExtraction_perArea <- data.frame(area_name = unique(Fisheries_NutrientExtraction$area_name))
+NutrientExtraction_perArea <- data.frame(
+  area_name = unique(Fisheries_NutrientExtraction$area_name),
+  area_km2 = Fisheries_NutrientExtraction$area_km2[match(unique(Fisheries_NutrientExtraction$area_name), Fisheries_NutrientExtraction$area_name)]
+)
 
 
 
@@ -869,6 +873,8 @@ NutrientExtraction_perArea <- NutrientExtraction_perArea %>%
 
 
 
+
+
 ##### PER TROPHIC GROUP #####
 
 ###### Carbon ######
@@ -1156,6 +1162,8 @@ NutrientExtraction_perTG$P_extracted_lowIQR_2014_18 <- quantiles_CIs_P[2, ]
 NutrientExtraction_perTG$P_extracted_median_2014_18 <- quantiles_CIs_P[3, ]
 NutrientExtraction_perTG$P_extracted_highIQR_2014_18 <- quantiles_CIs_P[4, ]
 NutrientExtraction_perTG$P_extracted_highCI_2014_18 <- quantiles_CIs_P[5, ]
+
+
 
 
 
