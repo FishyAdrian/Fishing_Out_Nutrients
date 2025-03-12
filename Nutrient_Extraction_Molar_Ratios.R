@@ -25,10 +25,7 @@ NutrientExtraction.Ratios_perTaxa <- Fisheries_NutrientExtraction %>%
   summarize(tonnes = sum(tonnes, na.rm = TRUE),
             C_extracted = sum(C_extracted, na.rm = TRUE),
             N_extracted = sum(N_extracted, na.rm = TRUE),
-            P_extracted = sum(P_extracted, na.rm = TRUE),
-            mean_C = mean(mean_WW_C),
-            mean_N = mean(mean_WW_N),
-            mean_P = mean(mean_WW_P)) %>% 
+            P_extracted = sum(P_extracted, na.rm = TRUE)) %>% 
   mutate(C.N = (C_extracted/N_extracted) * (14/12),
          C.P = (C_extracted/P_extracted) * (31/12),
          N.P = (N_extracted/P_extracted) * (31/14))
